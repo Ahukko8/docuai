@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { getResumes } from "@/actions/get-resumes";
-
+import {
+getResumesAction
+}
+from "@/actions/resumes/get";
 
 export default async function Resumes() {
 
     const resumes =
-        await getResumes();
+        await getResumesAction();
 
 
 

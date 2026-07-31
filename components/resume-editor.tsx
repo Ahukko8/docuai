@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import TemplateSelector from "./template-selector";
-import { createResume } from "@/actions/resume";
+import {
+    createResumeAction
+}
+    from "@/actions/resumes/create.";
 
 
 export default function ResumeEditor() {
@@ -52,7 +55,7 @@ export default function ResumeEditor() {
 
 
             const result =
-                await createResume({
+                await createResumeAction({
 
                     title:
                         resume.name
