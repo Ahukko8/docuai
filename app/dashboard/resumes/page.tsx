@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
-getResumesAction
+    getResumesAction
 }
-from "@/actions/resumes/get";
+    from "@/actions/resumes/get";
 
 export default async function Resumes() {
 
@@ -50,10 +50,8 @@ gap-5
 mt-10
 ">
 
-
                 {
                     resumes.map((resume) => (
-
 
                         <div
                             key={resume.id}
@@ -63,15 +61,12 @@ border
 border-white/10
 bg-white/5
 p-5
-">
+"
+                        >
 
 
-                            <h3 className="
-font-semibold
-">
-
+                            <h3 className="font-semibold">
                                 {resume.title}
-
                             </h3>
 
 
@@ -87,8 +82,22 @@ mt-2
                             </p>
 
 
-                        </div>
+                            <Link
+                                href={`/dashboard/resumes/${resume.id}`}
+                            >
 
+                                <Button
+                                    className="mt-4"
+                                >
+
+                                    Edit
+
+                                </Button>
+
+                            </Link>
+
+
+                        </div>
 
                     ))
                 }

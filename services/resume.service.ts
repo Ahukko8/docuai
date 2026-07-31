@@ -9,6 +9,18 @@ import {
 
     from "@/repositories/resume.repository";
 
+import {
+
+    getResumeByIdRepository,
+
+    updateResumeRepository,
+
+    deleteResumeRepository
+
+}
+
+    from "@/repositories/resume.repository";
+
 
 
 export async function createResumeService(
@@ -86,6 +98,50 @@ export async function getUserResumesService(
 ) {
 
     return await getUserResumesRepository(
+        userId
+    );
+
+}
+
+export async function getResumeService(
+    id: string,
+    userId: string
+) {
+
+    return await getResumeByIdRepository(
+        id,
+        userId
+    );
+
+}
+
+
+
+
+export async function updateResumeService(
+    id: string,
+    userId: string,
+    data: any
+) {
+
+    return await updateResumeRepository(
+        id,
+        userId,
+        data
+    );
+
+}
+
+
+
+
+export async function deleteResumeService(
+    id: string,
+    userId: string
+) {
+
+    return await deleteResumeRepository(
+        id,
         userId
     );
 
