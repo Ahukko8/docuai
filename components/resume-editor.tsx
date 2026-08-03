@@ -34,6 +34,8 @@ import type {
 
 import TemplateSelector from "@/components/template-selector";
 
+import AiImproveButton from "@/components/resume/ai-improve-button";
+
 
 interface ResumeEditorProps {
   initialResume: ResumeEditorData;
@@ -98,8 +100,8 @@ export default function ResumeEditor({
   );
 
   useUnsavedChangesWarning(
-  status
-);
+    status
+  );
 
 
   function updatePersonalInfo(
@@ -139,9 +141,9 @@ export default function ResumeEditor({
             (experience) =>
               experience.id === id
                 ? {
-                    ...experience,
-                    [field]: value,
-                  }
+                  ...experience,
+                  [field]: value,
+                }
                 : experience
           ),
       })
@@ -152,22 +154,22 @@ export default function ResumeEditor({
   function addExperience() {
     const experience:
       ResumeExperience = {
-        /*
-         * This runs only after a user click,
-         * so it does not affect hydration.
-         */
-        id: crypto.randomUUID(),
+      /*
+       * This runs only after a user click,
+       * so it does not affect hydration.
+       */
+      id: crypto.randomUUID(),
 
-        company: "",
+      company: "",
 
-        position: "",
+      position: "",
 
-        startDate: "",
+      startDate: "",
 
-        endDate: "",
+      endDate: "",
 
-        description: "",
-      };
+      description: "",
+    };
 
 
     setResume(
@@ -218,9 +220,9 @@ export default function ResumeEditor({
             (education) =>
               education.id === id
                 ? {
-                    ...education,
-                    [field]: value,
-                  }
+                  ...education,
+                  [field]: value,
+                }
                 : education
           ),
       })
@@ -231,16 +233,16 @@ export default function ResumeEditor({
   function addEducation() {
     const education:
       ResumeEducation = {
-        id: crypto.randomUUID(),
+      id: crypto.randomUUID(),
 
-        school: "",
+      school: "",
 
-        degree: "",
+      degree: "",
 
-        startDate: "",
+      startDate: "",
 
-        endDate: "",
-      };
+      endDate: "",
+    };
 
 
     setResume(
@@ -614,10 +616,42 @@ export default function ResumeEditor({
             {/* SUMMARY */}
 
             <EditorSection>
-              <SectionHeading
-                title="Professional summary"
-                description="Write a short overview of your professional experience."
-              />
+
+              <div className="flex flex-wrap items-start justify-between gap-4">
+
+                <SectionHeading
+                  title="Professional summary"
+                  description="Write a short overview of your professional experience."
+                />
+
+
+                <AiImproveButton
+                  kind="summary"
+
+                  text={
+                    resume.summary
+                  }
+
+                  context={{
+                    targetRole:
+                      resume.title,
+                  }}
+
+                  onApply={(
+                    improvedText
+                  ) =>
+                    setResume(
+                      (current) => ({
+                        ...current,
+
+                        summary:
+                          improvedText,
+                      })
+                    )
+                  }
+                />
+
+              </div>
 
 
               <textarea
@@ -638,14 +672,14 @@ export default function ResumeEditor({
 
                 rows={5}
 
-                placeholder="Experienced software developer with a strong background in building modern web applications..."
+                placeholder="Experienced software developer with a background in building modern web applications..."
 
                 className={
                   inputClassName
                 }
               />
-            </EditorSection>
 
+            </EditorSection>
 
             {/* EXPERIENCE */}
 
@@ -689,7 +723,7 @@ export default function ResumeEditor({
 
 
               {resume.experience.length ===
-              0 ? (
+                0 ? (
                 <EmptySection
                   message="No work experience added yet."
                 />
@@ -880,25 +914,61 @@ export default function ResumeEditor({
 
 
                         <div className="mt-4">
-                          <Field label="Description">
+                          <div>
+
+                            <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+
+                              <span className="text-xs font-medium text-zinc-400">
+                                Description
+                              </span>
+
+
+                              <AiImproveButton
+                                kind="experience"
+
+                                text={
+                                  experience.description
+                                }
+
+                                context={{
+                                  targetRole:
+                                    resume.title,
+
+                                  position:
+                                    experience.position,
+
+                                  company:
+                                    experience.company,
+                                }}
+
+                                onApply={(
+                                  improvedText
+                                ) =>
+                                  updateExperience(
+                                    experience.id,
+                                    "description",
+                                    improvedText
+                                  )
+                                }
+                              />
+
+                            </div>
+
+
                             <textarea
                               value={
                                 experience.description
                               }
 
-                              onChange={(
-                                event
-                              ) =>
+                              onChange={(event) =>
                                 updateExperience(
                                   experience.id,
                                   "description",
-                                  event
-                                    .target
-                                    .value
+                                  event.target.value
                                 )
                               }
 
-                              rows={4}
+                              rows={5}
 
                               placeholder="Describe your responsibilities, accomplishments and results."
 
@@ -906,7 +976,8 @@ export default function ResumeEditor({
                                 inputClassName
                               }
                             />
-                          </Field>
+
+                          </div>
                         </div>
                       </div>
                     )
@@ -958,7 +1029,7 @@ export default function ResumeEditor({
 
 
               {resume.education.length ===
-              0 ? (
+                0 ? (
                 <EmptySection
                   message="No education added yet."
                 />
@@ -1317,170 +1388,170 @@ export default function ResumeEditor({
 
             {resume.experience.length >
               0 && (
-              <ResumePreviewSection
-                title="Experience"
-              >
-                <div className="space-y-5">
-                  {resume.experience.map(
-                    (experience) => (
-                      <article
-                        key={
-                          experience.id
-                        }
-                      >
-                        <div
-                          className="
+                <ResumePreviewSection
+                  title="Experience"
+                >
+                  <div className="space-y-5">
+                    {resume.experience.map(
+                      (experience) => (
+                        <article
+                          key={
+                            experience.id
+                          }
+                        >
+                          <div
+                            className="
                             flex
                             items-start
                             justify-between
                             gap-4
                           "
-                        >
-                          <div>
-                            <h3
-                              className="
+                          >
+                            <div>
+                              <h3
+                                className="
                                 text-sm
                                 font-semibold
                               "
-                            >
-                              {experience.position ||
-                                "Position"}
-                            </h3>
+                              >
+                                {experience.position ||
+                                  "Position"}
+                              </h3>
 
-                            <p
-                              className="
+                              <p
+                                className="
                                 text-sm
                                 text-zinc-600
                               "
-                            >
-                              {experience.company ||
-                                "Company"}
-                            </p>
-                          </div>
+                              >
+                                {experience.company ||
+                                  "Company"}
+                              </p>
+                            </div>
 
 
-                          <p
-                            className="
+                            <p
+                              className="
                               shrink-0
                               text-xs
                               text-zinc-500
                             "
-                          >
-                            {formatDateRange(
-                              experience.startDate,
-                              experience.endDate
-                            )}
-                          </p>
-                        </div>
+                            >
+                              {formatDateRange(
+                                experience.startDate,
+                                experience.endDate
+                              )}
+                            </p>
+                          </div>
 
 
-                        {experience.description && (
-                          <p
-                            className="
+                          {experience.description && (
+                            <p
+                              className="
                               mt-2
                               whitespace-pre-wrap
                               text-sm
                               leading-6
                               text-zinc-700
                             "
-                          >
-                            {
-                              experience.description
-                            }
-                          </p>
-                        )}
-                      </article>
-                    )
-                  )}
-                </div>
-              </ResumePreviewSection>
-            )}
+                            >
+                              {
+                                experience.description
+                              }
+                            </p>
+                          )}
+                        </article>
+                      )
+                    )}
+                  </div>
+                </ResumePreviewSection>
+              )}
 
 
             {resume.education.length >
               0 && (
-              <ResumePreviewSection
-                title="Education"
-              >
-                <div className="space-y-4">
-                  {resume.education.map(
-                    (education) => (
-                      <article
-                        key={
-                          education.id
-                        }
+                <ResumePreviewSection
+                  title="Education"
+                >
+                  <div className="space-y-4">
+                    {resume.education.map(
+                      (education) => (
+                        <article
+                          key={
+                            education.id
+                          }
 
-                        className="
+                          className="
                           flex
                           items-start
                           justify-between
                           gap-4
                         "
-                      >
-                        <div>
-                          <h3
-                            className="
+                        >
+                          <div>
+                            <h3
+                              className="
                               text-sm
                               font-semibold
                             "
-                          >
-                            {education.degree ||
-                              "Degree"}
-                          </h3>
+                            >
+                              {education.degree ||
+                                "Degree"}
+                            </h3>
 
-                          <p
-                            className="
+                            <p
+                              className="
                               text-sm
                               text-zinc-600
                             "
-                          >
-                            {education.school ||
-                              "School"}
-                          </p>
-                        </div>
+                            >
+                              {education.school ||
+                                "School"}
+                            </p>
+                          </div>
 
 
-                        <p
-                          className="
+                          <p
+                            className="
                             shrink-0
                             text-xs
                             text-zinc-500
                           "
-                        >
-                          {formatDateRange(
-                            education.startDate,
-                            education.endDate
-                          )}
-                        </p>
-                      </article>
-                    )
-                  )}
-                </div>
-              </ResumePreviewSection>
-            )}
+                          >
+                            {formatDateRange(
+                              education.startDate,
+                              education.endDate
+                            )}
+                          </p>
+                        </article>
+                      )
+                    )}
+                  </div>
+                </ResumePreviewSection>
+              )}
 
 
             {resume.skills.length >
               0 && (
-              <ResumePreviewSection
-                title="Skills"
-              >
-                <div
-                  className="
+                <ResumePreviewSection
+                  title="Skills"
+                >
+                  <div
+                    className="
                     flex
                     flex-wrap
                     gap-2
                   "
-                >
-                  {resume.skills.map(
-                    (
-                      skill,
-                      index
-                    ) => (
-                      <span
-                        key={`${skill}-${index}`}
+                  >
+                    {resume.skills.map(
+                      (
+                        skill,
+                        index
+                      ) => (
+                        <span
+                          key={`${skill}-${index}`}
 
-                        className="
+                          className="
                           rounded
                           bg-zinc-100
                           px-2
@@ -1488,14 +1559,14 @@ export default function ResumeEditor({
                           text-xs
                           text-zinc-700
                         "
-                      >
-                        {skill}
-                      </span>
-                    )
-                  )}
-                </div>
-              </ResumePreviewSection>
-            )}
+                        >
+                          {skill}
+                        </span>
+                      )
+                    )}
+                  </div>
+                </ResumePreviewSection>
+              )}
           </div>
         </div>
       </aside>
