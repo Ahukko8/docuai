@@ -36,6 +36,8 @@ import TemplateSelector from "@/components/template-selector";
 
 import AiImproveButton from "@/components/resume/ai-improve-button";
 
+import DownloadPdfButton from "@/components/resume/download-pdf-button";
+
 
 interface ResumeEditorProps {
   initialResume: ResumeEditorData;
@@ -375,6 +377,18 @@ export default function ResumeEditor({
               <DeleteResumeButton
                 resumeId={resume.id}
                 redirectAfterDelete
+              />
+
+              <DownloadPdfButton
+                resumeId={resume.id}
+
+                resumeTitle={
+                  resume.title
+                }
+
+                beforeDownload={
+                  saveNow
+                }
               />
 
 
