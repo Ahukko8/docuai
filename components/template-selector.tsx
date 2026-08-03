@@ -1,131 +1,178 @@
 "use client";
 
+import {
+  Check,
+  Crown,
+} from "lucide-react";
+
+import {
+  RESUME_TEMPLATE_THEMES,
+} from "@/lib/resume/template-config";
+
 import type {
-    ResumeTemplate
+  ResumeTemplate,
 } from "@/types/resume";
 
 
-interface Template {
-    id: ResumeTemplate;
+interface TemplateSelectorProps {
+  selected: ResumeTemplate;
 
-    name: string;
-
-    description: string;
-
-    pro: boolean;
+  onSelect:
+    (template: ResumeTemplate) =>
+      void;
 }
 
 
-const templates: Template[] = [
-    {
-        id: "modern",
-
-        name: "Modern",
-
-        description:
-            "Clean and ATS-friendly.",
-
-        pro: false,
-    },
-
-    {
-        id: "executive",
-
-        name: "Executive",
-
-        description:
-            "Professional layout for senior roles.",
-
-        pro: true,
-    },
-
-    {
-        id: "creative",
-
-        name: "Creative",
-
-        description:
-            "A polished layout for creative careers.",
-
-        pro: true,
-    },
+const templateOrder:
+  ResumeTemplate[] = [
+  "modern",
+  "executive",
+  "creative",
 ];
 
 
-interface TemplateSelectorProps {
-    selected: ResumeTemplate;
-
-    onSelect:
-    (template: ResumeTemplate) =>
-        void;
-}
-
-
 export default function TemplateSelector({
-    selected,
-    onSelect,
+  selected,
+  onSelect,
 }: TemplateSelectorProps) {
-    return (
-        <div className="grid gap-3 sm:grid-cols-3">
+  return (
+    <div className="grid gap-4 md:grid-cols-3">
+      {templateOrder.map(
+        (templateId) => {
+          const template =
+            RESUME_TEMPLATE_THEMES[
+              templateId
+            ];
 
-            {templates.map(
-                (template) => {
-                    const active =
-                        selected ===
-                        template.id;
+
+          const active =
+            selected === templateId;
 
 
-                    return (
-                        <button
-                            key={template.id}
+          const isPremium =
+            templateId !== "modern";
 
-                            type="button"
 
-                            onClick={() =>
-                                onSelect(
-                                    template.id
-                                )
-                            }
+          return (
+            <button
+              key={templateId}
 
-                            className={`
+              type="button"
+
+              onClick={() =>
+                onSelect(templateId)
+              }
+
+              className={`
+                relative
+                overflow-hidden
                 rounded-xl
                 border
                 p-4
                 text-left
                 transition
 
-                ${active
-                                    ? "border-purple-500 bg-purple-500/10"
-                                    : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
-                                }
-              `}
-                        >
-
-                            <div className="flex items-center justify-between gap-2">
-
-                                <span className="font-medium text-white">
-                                    {template.name}
-                                </span>
-
-
-                                {template.pro && (
-                                    <span className="rounded-full bg-purple-500/15 px-2 py-1 text-[10px] font-semibold text-purple-300">
-                                        PRO
-                                    </span>
-                                )}
-
-                            </div>
-
-
-                            <p className="mt-2 text-xs leading-5 text-zinc-400">
-                                {template.description}
-                            </p>
-
-                        </button>
-                    );
+                ${
+                  active
+                    ? "border-purple-500 bg-purple-500/10 ring-2 ring-purple-500/10"
+                    : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]"
                 }
-            )}
+              `}
+            >
+              <div
+                className="
+                  flex
+                  items-start
+                  justify-between
+                  gap-3
+                "
+              >
+                <div>
+                  <div
+                    className="
+                      flex
+                      items-center
+                      gap-2
+                    "
+                  >
+                    <h3 className="font-medium text-white">
+                      {template.name}
+                    </h3>
 
-        </div>
-    );
+
+                    {isPremium && (
+                      <span
+                        className="
+                          inline-flex
+                          items-center
+                          gap-1
+                          rounded-full
+                          bg-amber-500/10
+                          px-2
+                          py-1
+                          text-[10px]
+                          font-semibold
+                          text-amber-300
+                        "
+                      >
+                        <Crown className="h-3 w-3" />
+
+                        PRO
+                      </span>
+                    )}
+                  </div>
+
+
+                  <p
+                    className="
+                      mt-2
+                      text-xs
+                      leading-5
+                      text-zinc-400
+                    "
+                  >
+                    {template.description}
+                  </p>
+                </div>
+
+
+                {active && (
+                  <span
+                    className="
+                      flex
+                      h-6
+                      w-6
+                      shrink-0
+                      items-center
+                      justify-center
+                      rounded-full
+                      bg-purple-500
+                      text-white
+                    "
+                  >
+                    <Check className="h-4 w-4" />
+                  </span>
+                )}
+              </div>
+
+
+              <p
+                className="
+                  mt-4
+                  border-t
+                  border-white/10
+                  pt-3
+                  text-[11px]
+                  leading-5
+                  text-zinc-500
+                "
+              >
+                {template.recommendedFor}
+              </p>
+            </button>
+          );
+        }
+      )}
+    </div>
+  );
 }
