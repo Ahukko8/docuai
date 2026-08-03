@@ -1,59 +1,77 @@
 export type ResumeTemplate =
-"modern"
-|
-"executive"
-|
-"creative";
+  | "modern"
+  | "executive"
+  | "creative";
+
+
+export interface PersonalInfo {
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+  linkedin: string;
+}
 
 
 export interface ResumeExperience {
+  id: string;
 
-company:string;
+  company: string;
 
-position:string;
+  position: string;
 
-startDate:string;
+  startDate: string;
 
-endDate:string;
+  endDate: string;
 
-description:string[];
-
+  description: string;
 }
 
 
+export interface ResumeEducation {
+  id: string;
 
-export interface Education {
+  school: string;
 
-school:string;
+  degree: string;
 
-degree:string;
+  startDate: string;
 
-year:string;
-
+  endDate: string;
 }
 
 
+export interface ResumeEditorData {
+  id: string;
 
-export interface Resume {
+  title: string;
 
-id:string;
+  template: ResumeTemplate;
 
-userId:string;
+  personalInfo: PersonalInfo;
 
-title:string;
+  summary: string;
 
-template:ResumeTemplate;
+  experience: ResumeExperience[];
 
-summary:string;
+  education: ResumeEducation[];
 
-experience:ResumeExperience[];
+  skills: string[];
+}
 
-education:Education[];
 
-skills:string[];
+export interface UpdateResumeInput {
+  title: string;
 
-createdAt:string;
+  template: ResumeTemplate;
 
-updatedAt:string;
+  personalInfo: PersonalInfo;
 
+  summary: string;
+
+  experience: ResumeExperience[];
+
+  education: ResumeEducation[];
+
+  skills: string[];
 }

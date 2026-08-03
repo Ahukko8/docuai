@@ -1,206 +1,190 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { adminClient } from "@/lib/supabase/admin";
 
+import type {
+  PersonalInfo,
+  ResumeEducation,
+  ResumeExperience,
+  ResumeTemplate,
+  UpdateResumeInput,
+} from "@/types/resume";
 
-export interface CreateResumeInput {
 
-    userId: string;
+export interface CreateResumeRepositoryInput {
+  userId: string;
 
-    title: string;
+  title: string;
 
-    template: string;
+  template: ResumeTemplate;
 
-    personalInfo: object;
+  personalInfo: PersonalInfo;
 
-    experience: object;
+  summary: string;
 
-    education: object;
+  experience: ResumeExperience[];
 
-    skills: string[];
+  education: ResumeEducation[];
 
+  skills: string[];
 }
-
 
 
 export async function createResumeRepository(
-    data: CreateResumeInput
+  input: CreateResumeRepositoryInput
 ) {
+  const { data, error } = await adminClient
+    .from("resumes")
+    .insert({
+      user_id: input.userId,
 
-    const { data: resume, error } =
+      title: input.title,
 
-        await adminClient
-            .from("resumes")
-            .insert({
+      template: input.template,
 
-                user_id: data.userId,
+      personal_info: input.personalInfo,
 
-                title: data.title,
+      summary: input.summary,
 
-                template: data.template,
+      experience: input.experience,
 
-                personal_info: data.personalInfo,
+      education: input.education,
 
-                experience: data.experience,
-
-                education: data.education,
-
-                skills: data.skills
-
-            })
-            .select()
-            .single();
+      skills: input.skills,
+    })
+    .select()
+    .single();
 
 
+  if (error) {
+    console.error(
+      "createResumeRepository:",
+      error
+    );
 
-    if (error) {
-
-        throw new Error(error.message);
-
-    }
+    throw new Error(error.message);
+  }
 
 
-    return resume;
-
+  return data;
 }
-
 
 
 export async function getUserResumesRepository(
-    userId: string
+  userId: string
 ) {
+  const { data, error } = await adminClient
+    .from("resumes")
+    .select("*")
+    .eq("user_id", userId)
+    .order("updated_at", {
+      ascending: false,
+    });
 
 
-    const { data, error } =
+  if (error) {
+    console.error(
+      "getUserResumesRepository:",
+      error
+    );
 
-        await adminClient
-            .from("resumes")
-            .select("*")
-            .eq(
-                "user_id",
-                userId
-            )
-            .order(
-                "created_at",
-                {
-                    ascending: false
-                }
-            );
+    throw new Error(error.message);
+  }
 
 
-
-    if (error) {
-
-        throw new Error(error.message);
-
-    }
-
-
-    return data ?? [];
-
+  return data ?? [];
 }
+
 
 export async function getResumeByIdRepository(
-    id: string,
-    userId: string
+  id: string,
+  userId: string
 ) {
-
-    const { data, error } =
-
-        await adminClient
-            .from("resumes")
-            .select("*")
-            .eq("id", id)
-            .eq("user_id", userId)
-            .single();
+  const { data, error } = await adminClient
+    .from("resumes")
+    .select("*")
+    .eq("id", id)
+    .eq("user_id", userId)
+    .maybeSingle();
 
 
+  if (error) {
+    console.error(
+      "getResumeByIdRepository:",
+      error
+    );
 
-    if (error) {
-
-        throw new Error(error.message);
-
-    }
+    throw new Error(error.message);
+  }
 
 
-    return data;
-
+  return data;
 }
-
-
-
 
 
 export async function updateResumeRepository(
-    id: string,
-    userId: string,
-    data: any
+  id: string,
+  userId: string,
+  input: UpdateResumeInput
 ) {
+  const { data, error } = await adminClient
+    .from("resumes")
+    .update({
+      title: input.title,
 
-    const { data: resume, error } =
+      template: input.template,
 
-        await adminClient
-            .from("resumes")
-            .update({
+      personal_info: input.personalInfo,
 
-                title: data.title,
+      summary: input.summary,
 
-                template: data.template,
+      experience: input.experience,
 
-                personal_info: data.personalInfo,
+      education: input.education,
 
-                experience: data.experience,
+      skills: input.skills,
 
-                education: data.education,
-
-                skills: data.skills,
-
-                updated_at: new Date()
-
-            })
-            .eq("id", id)
-            .eq("user_id", userId)
-            .select()
-            .single();
+      updated_at:
+        new Date().toISOString(),
+    })
+    .eq("id", id)
+    .eq("user_id", userId)
+    .select()
+    .single();
 
 
+  if (error) {
+    console.error(
+      "updateResumeRepository:",
+      error
+    );
 
-    if (error) {
-
-        throw new Error(error.message);
-
-    }
+    throw new Error(error.message);
+  }
 
 
-    return resume;
-
+  return data;
 }
 
 
-
-
-
 export async function deleteResumeRepository(
-    id: string,
-    userId: string
+  id: string,
+  userId: string
 ) {
-
-    const { error } =
-
-        await adminClient
-            .from("resumes")
-            .delete()
-            .eq("id", id)
-            .eq("user_id", userId);
+  const { error } = await adminClient
+    .from("resumes")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
 
 
+  if (error) {
+    console.error(
+      "deleteResumeRepository:",
+      error
+    );
 
-    if (error) {
-
-        throw new Error(error.message);
-
-    }
+    throw new Error(error.message);
+  }
 
 
-    return true;
-
+  return true;
 }

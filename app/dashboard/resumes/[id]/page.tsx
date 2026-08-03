@@ -1,62 +1,57 @@
 import {
-    getResumeAction
+  notFound
+} from "next/navigation";
+
+import {
+  getResumeAction
+} from "@/actions/resumes/get-one";
+
+import ResumeEditor from "@/components/resume-editor";
+
+
+interface EditResumePageProps {
+  params: Promise<{
+    id: string;
+  }>;
 }
-    from "@/actions/resumes/get-one";
 
 
-export default async function EditResume({
-
-    params
-
-}: {
-
-    params: {
-        id: string
-    }
-
-}) {
+export default async function EditResumePage({
+  params,
+}: EditResumePageProps) {
+  const { id } =
+    await params;
 
 
-    const resume =
-        await getResumeAction(
-            params.id
-        );
+  const resume =
+    await getResumeAction(id);
 
 
-
-    return (
-
-        <div>
-
-
-            <h1 className="
-text-3xl
-font-bold
-">
-
-                Edit Resume
-
-            </h1>
+  if (!resume) {
+    notFound();
+  }
 
 
-            <pre className="
-mt-8
-bg-white/5
-p-5
-rounded-xl
-">
+  return (
+    <div className="mx-auto max-w-[1600px]">
 
-                {JSON.stringify(
-                    resume,
-                    null,
-                    2
-                )}
+      <div className="mb-8">
 
-            </pre>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Edit Resume
+        </h1>
+
+        <p className="mt-2 text-sm text-zinc-400">
+          Build and preview your resume.
+        </p>
+
+      </div>
 
 
-        </div>
+      <ResumeEditor
+        initialResume={resume}
+      />
 
-    )
-
+    </div>
+  );
 }

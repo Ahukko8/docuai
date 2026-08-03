@@ -1,117 +1,131 @@
 "use client";
 
+import type {
+    ResumeTemplate
+} from "@/types/resume";
 
-import { resumeTemplates } from "@/lib/templates";
 
+interface Template {
+    id: ResumeTemplate;
 
-interface Props {
+    name: string;
 
-    selected: string;
+    description: string;
 
-    onSelect: (id: string) => void;
-
+    pro: boolean;
 }
 
 
+const templates: Template[] = [
+    {
+        id: "modern",
+
+        name: "Modern",
+
+        description:
+            "Clean and ATS-friendly.",
+
+        pro: false,
+    },
+
+    {
+        id: "executive",
+
+        name: "Executive",
+
+        description:
+            "Professional layout for senior roles.",
+
+        pro: true,
+    },
+
+    {
+        id: "creative",
+
+        name: "Creative",
+
+        description:
+            "A polished layout for creative careers.",
+
+        pro: true,
+    },
+];
+
+
+interface TemplateSelectorProps {
+    selected: ResumeTemplate;
+
+    onSelect:
+    (template: ResumeTemplate) =>
+        void;
+}
+
 
 export default function TemplateSelector({
-
     selected,
-
-    onSelect
-
-}: Props) {
-
-
+    onSelect,
+}: TemplateSelectorProps) {
     return (
+        <div className="grid gap-3 sm:grid-cols-3">
 
-        <div className="
-grid
-md:grid-cols-3
-gap-4
-">
-
-
-            {
-                resumeTemplates.map((template) => (
+            {templates.map(
+                (template) => {
+                    const active =
+                        selected ===
+                        template.id;
 
 
-                    <button
+                    return (
+                        <button
+                            key={template.id}
 
-                        key={template.id}
+                            type="button"
 
-                        onClick={() =>
-                            onSelect(template.id)
-                        }
-
-                        className={`
-
-rounded-xl
-border
-p-5
-text-left
-
-${selected === template.id
-                                ?
-                                "border-purple-500 bg-purple-500/10"
-                                :
-                                "border-white/10 bg-white/5"
+                            onClick={() =>
+                                onSelect(
+                                    template.id
+                                )
                             }
 
-`}
+                            className={`
+                rounded-xl
+                border
+                p-4
+                text-left
+                transition
 
-                    >
+                ${active
+                                    ? "border-purple-500 bg-purple-500/10"
+                                    : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
+                                }
+              `}
+                        >
 
+                            <div className="flex items-center justify-between gap-2">
 
-                        <h3 className="
-font-semibold
-">
-
-                            {template.name}
-
-                        </h3>
-
-
-                        <p className="
-text-sm
-text-zinc-400
-mt-2
-">
-
-                            {template.description}
-
-                        </p>
+                                <span className="font-medium text-white">
+                                    {template.name}
+                                </span>
 
 
+                                {template.pro && (
+                                    <span className="rounded-full bg-purple-500/15 px-2 py-1 text-[10px] font-semibold text-purple-300">
+                                        PRO
+                                    </span>
+                                )}
 
-                        {
-                            !template.free &&
-
-                            <span className="
-inline-block
-mt-3
-text-xs
-text-purple-400
-">
-
-                                PRO
-
-                            </span>
-
-                        }
+                            </div>
 
 
+                            <p className="mt-2 text-xs leading-5 text-zinc-400">
+                                {template.description}
+                            </p>
 
-                    </button>
-
-
-                ))
-
-            }
-
+                        </button>
+                    );
+                }
+            )}
 
         </div>
-
-    )
-
+    );
 }

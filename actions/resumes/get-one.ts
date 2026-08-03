@@ -1,33 +1,25 @@
 "use server";
 
-
 import { auth } from "@clerk/nextjs/server";
 
 import {
-    getResumeService
-}
-    from "@/services/resume.service";
+  getResumeService,
+} from "@/services/resume.service";
 
 
 export async function getResumeAction(
-    id: string
+  id: string
 ) {
-
-    const { userId } = await auth();
-
-
-    if (!userId) {
-
-        throw new Error(
-            "Unauthorized"
-        );
-
-    }
+  const { userId } = await auth();
 
 
-    return await getResumeService(
-        id,
-        userId
-    );
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
 
+
+  return await getResumeService(
+    id,
+    userId
+  );
 }
