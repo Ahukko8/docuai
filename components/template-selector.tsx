@@ -167,7 +167,6 @@ export default function TemplateSelector({
                   text-zinc-500
                 "
               >
-                {template.recommendedFor}
               </p>
             </button>
           );
