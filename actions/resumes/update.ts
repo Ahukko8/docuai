@@ -5,20 +5,25 @@ import {
 } from "@clerk/nextjs/server";
 
 import {
-  updateResumeService,
-} from "@/services/resume.service";
-
-import {
   resumeDraftSchema,
 } from "@/lib/validation/resume";
+
+import {
+  assertTemplateAccessService,
+} from "@/services/billing.service";
+
+import {
+  updateResumeService,
+} from "@/services/resume.service";
 
 
 export async function updateResumeAction(
   id: string,
   input: unknown
 ) {
-  const { userId } =
-    await auth();
+  const {
+    userId,
+  } = await auth();
 
 
   if (!userId) {
@@ -42,15 +47,19 @@ export async function updateResumeAction(
 
 
   if (!validation.success) {
-    const firstIssue =
-      validation.error.issues[0];
-
-
     throw new Error(
-      firstIssue?.message ??
-        "The resume contains invalid information."
+      validation.error
+        .issues[0]
+        ?.message ??
+        "Invalid resume information."
     );
   }
+
+
+  await assertTemplateAccessService(
+    userId,
+    validation.data.template
+  );
 
 
   const updatedResume =

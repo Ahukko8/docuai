@@ -1,16 +1,26 @@
 import {
-  notFound
+  auth,
+} from "@clerk/nextjs/server";
+
+import {
+  notFound,
+  redirect,
 } from "next/navigation";
 
 import {
-  getResumeAction
+  getResumeAction,
 } from "@/actions/resumes/get-one";
 
 import ResumeEditor from "@/components/resume-editor";
 
+import {
+  getUserEntitlementsService,
+} from "@/services/billing.service";
+
 
 interface EditResumePageProps {
-  params: Promise<{
+  params:
+  Promise<{
     id: string;
   }>;
 }
@@ -19,12 +29,31 @@ interface EditResumePageProps {
 export default async function EditResumePage({
   params,
 }: EditResumePageProps) {
-  const { id } =
-    await params;
+  const {
+    userId,
+  } = await auth();
 
 
-  const resume =
-    await getResumeAction(id);
+  if (!userId) {
+    redirect("/");
+  }
+
+
+  const {
+    id,
+  } = await params;
+
+
+  const [
+    resume,
+    entitlements,
+  ] = await Promise.all([
+    getResumeAction(id),
+
+    getUserEntitlementsService(
+      userId
+    ),
+  ]);
 
 
   if (!resume) {
@@ -36,20 +65,23 @@ export default async function EditResumePage({
     <div className="mx-auto max-w-[1600px]">
 
       <div className="mb-8">
-
         <h1 className="text-3xl font-bold tracking-tight">
           Edit Resume
         </h1>
 
         <p className="mt-2 text-sm text-zinc-400">
-          Build and preview your resume.
+          Build, improve and export your professional resume.
         </p>
-
       </div>
 
 
       <ResumeEditor
         initialResume={resume}
+
+        hasProAccess={
+          entitlements
+            .hasProAccess
+        }
       />
 
     </div>

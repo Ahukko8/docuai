@@ -15,24 +15,31 @@ import type {
 
 
 interface TemplateSelectorProps {
-  selected: ResumeTemplate;
+  selected:
+  ResumeTemplate;
+
+  hasProAccess:
+  boolean;
 
   onSelect:
-    (template: ResumeTemplate) =>
-      void;
+  (
+    template:
+      ResumeTemplate
+  ) => void;
 }
 
 
 const templateOrder:
   ResumeTemplate[] = [
-  "modern",
-  "executive",
-  "creative",
-];
+    "modern",
+    "executive",
+    "creative",
+  ];
 
 
 export default function TemplateSelector({
   selected,
+  hasProAccess,
   onSelect,
 }: TemplateSelectorProps) {
   return (
@@ -41,7 +48,7 @@ export default function TemplateSelector({
         (templateId) => {
           const template =
             RESUME_TEMPLATE_THEMES[
-              templateId
+            templateId
             ];
 
 
@@ -52,6 +59,10 @@ export default function TemplateSelector({
           const isPremium =
             templateId !== "modern";
 
+          const isLocked =
+            isPremium &&
+            !hasProAccess;
+
 
           return (
             <button
@@ -59,9 +70,16 @@ export default function TemplateSelector({
 
               type="button"
 
-              onClick={() =>
-                onSelect(templateId)
-              }
+              onClick={() => {
+                if (isLocked) {
+                  window.location.href =
+                    "/dashboard/billing";
+
+                  return;
+                }
+
+                onSelect(templateId);
+              }}
 
               className={`
                 relative
@@ -72,10 +90,9 @@ export default function TemplateSelector({
                 text-left
                 transition
 
-                ${
-                  active
-                    ? "border-purple-500 bg-purple-500/10 ring-2 ring-purple-500/10"
-                    : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]"
+                ${active
+                  ? "border-purple-500 bg-purple-500/10 ring-2 ring-purple-500/10"
+                  : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]"
                 }
               `}
             >
@@ -133,6 +150,11 @@ export default function TemplateSelector({
                   >
                     {template.description}
                   </p>
+                  {isLocked && (
+                    <p className="mt-3 text-[11px] font-medium text-amber-300">
+                      Upgrade to Pro to use this template
+                    </p>
+                  )}
                 </div>
 
 

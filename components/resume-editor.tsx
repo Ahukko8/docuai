@@ -42,7 +42,10 @@ import ResumeTemplatePreview from "@/components/resume/resume-template-preview";
 
 
 interface ResumeEditorProps {
-  initialResume: ResumeEditorData;
+  initialResume:
+  ResumeEditorData;
+
+  hasProAccess: boolean;
 }
 
 
@@ -67,6 +70,7 @@ const inputClassName = `
 
 export default function ResumeEditor({
   initialResume,
+  hasProAccess,
 }: ResumeEditorProps) {
   /*
    * The initial state comes from the Server Component.
@@ -471,13 +475,14 @@ export default function ResumeEditor({
                     resume.template
                   }
 
-                  onSelect={(
-                    template
-                  ) =>
+                  hasProAccess={
+                    hasProAccess
+                  }
+
+                  onSelect={(template) =>
                     setResume(
                       (current) => ({
                         ...current,
-
                         template,
                       })
                     )
