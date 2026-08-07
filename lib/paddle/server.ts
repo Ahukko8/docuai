@@ -6,7 +6,7 @@ import {
 } from "@paddle/paddle-node-sdk";
 
 
-function requiredEnvironmentVariable(
+function requiredEnv(
   name: string
 ) {
   const value =
@@ -24,36 +24,50 @@ function requiredEnvironmentVariable(
 }
 
 
+const environment =
+  requiredEnv(
+    "PADDLE_ENVIRONMENT"
+  );
+
+
+if (
+  environment !== "sandbox" &&
+  environment !== "production"
+) {
+  throw new Error(
+    "PADDLE_ENVIRONMENT must be sandbox or production."
+  );
+}
+
+
+const apiKey =
+  requiredEnv(
+    "PADDLE_API_KEY"
+  );
+
+
+const webhookSecret =
+  requiredEnv(
+    "PADDLE_WEBHOOK_SECRET"
+  );
+
+
 export const paddleServerConfig = {
-  apiKey:
-    requiredEnvironmentVariable(
-      "PADDLE_API_KEY"
-    ),
+  environment,
 
-  webhookSecret:
-    requiredEnvironmentVariable(
-      "PADDLE_WEBHOOK_SECRET"
-    ),
+  apiKey,
 
-  proProductId:
-    requiredEnvironmentVariable(
-      "PADDLE_PRO_PRODUCT_ID"
-    ),
-
-  environment:
-    process.env
-      .NEXT_PUBLIC_PADDLE_ENVIRONMENT ===
-    "production"
-      ? Environment.production
-      : Environment.sandbox,
+  webhookSecret,
 };
 
 
 export const paddleServer =
   new Paddle(
-    paddleServerConfig.apiKey,
+    apiKey,
     {
       environment:
-        paddleServerConfig.environment,
+        environment === "sandbox"
+          ? Environment.sandbox
+          : Environment.production,
     }
   );

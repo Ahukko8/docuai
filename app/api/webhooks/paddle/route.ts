@@ -1,25 +1,40 @@
+import type {
+  Customer,
+  Subscription,
+  Transaction,
+} from "@paddle/paddle-node-sdk";
+
 import {
   paddleServer,
   paddleServerConfig,
 } from "@/lib/paddle/server";
 
 import {
-  getBillingSubscriptionByPaddleIdRepository,
-  hasProcessedPaddleEventRepository,
-  markPaddleEventProcessedRepository,
-  upsertBillingSubscriptionRepository,
-} from "@/repositories/billing.repository";
+  getPlanFromPriceId,
+} from "@/lib/billing/plans";
 
-import type {
-  BillingSubscription,
-} from "@/types/billing";
+import {
+  hasProcessedPaddleEventRepository,
+  linkBillingIdentityRepository,
+  markPaddleEventProcessedRepository,
+  resolveUserIdForCustomerRepository,
+  upsertBillingCustomerRepository,
+  upsertBillingSubscriptionRepository,
+  upsertBillingTransactionRepository,
+} from "@/repositories/billing.repository";
 
 
 export const runtime =
   "nodejs";
 
 
-interface PaddleWebhookEvent {
+export const dynamic =
+  "force-dynamic";
+
+
+interface VerifiedWebhook<
+  T
+> {
   eventId: string;
 
   eventType: string;
@@ -27,46 +42,25 @@ interface PaddleWebhookEvent {
   occurredAt:
     string | Date;
 
-  data:
-    PaddleSubscriptionData;
-}
-
-
-interface PaddleSubscriptionData {
-  id: string;
-
-  customerId: string;
-
-  status:
-    BillingSubscription["status"];
-
-  customData?:
-    Record<
-      string,
-      unknown
-    > | null;
-
-  items?: Array<{
-    price?: {
-      id?: string;
-
-      productId?: string;
-    };
-  }>;
-
-  currentBillingPeriod?: {
-    endsAt?: string;
-  } | null;
-
-  scheduledChange?: {
-    effectiveAt?: string;
-  } | null;
+  data: T;
 }
 
 
 export async function POST(
   request: Request
 ) {
+  /*
+   * IMPORTANT:
+   *
+   * Signature verification needs the exact
+   * raw request body.
+   *
+   * Do not request.json() before this.
+   */
+  const rawBody =
+    await request.text();
+
+
   const signature =
     request.headers.get(
       "paddle-signature"
@@ -83,40 +77,38 @@ export async function POST(
   }
 
 
-  /*
-   * Signature verification requires the
-   * exact, unmodified raw request body.
-   */
-  const rawBody =
-    await request.text();
-
-
   let event:
-    PaddleWebhookEvent;
+    VerifiedWebhook<unknown>;
 
 
   try {
+    const verified =
+      await paddleServer
+        .webhooks
+        .unmarshal(
+          rawBody,
+          paddleServerConfig
+            .webhookSecret,
+          signature
+        );
+
+
     event =
-      (
-        await paddleServer
-          .webhooks
-          .unmarshal(
-            rawBody,
-
-            paddleServerConfig
-              .webhookSecret,
-
-            signature
-          )
-      ) as unknown as
-        PaddleWebhookEvent;
+      verified as unknown as
+        VerifiedWebhook<unknown>;
   } catch (error) {
     console.error(
-      "Invalid Paddle webhook:",
+      "Paddle webhook signature verification failed:",
       error
     );
 
 
+    /*
+     * Do NOT return 2xx.
+     *
+     * Paddle should retry invalid/failed
+     * deliveries when appropriate.
+     */
     return new Response(
       "Invalid webhook signature.",
       {
@@ -127,20 +119,18 @@ export async function POST(
 
 
   const occurredAt =
-    event.occurredAt instanceof
-    Date
-      ? event.occurredAt
-          .toISOString()
-      : event.occurredAt;
+    toIsoString(
+      event.occurredAt
+    );
 
 
-  const alreadyProcessed =
+  const duplicate =
     await hasProcessedPaddleEventRepository(
       event.eventId
     );
 
 
-  if (alreadyProcessed) {
+  if (duplicate) {
     return Response.json({
       received: true,
 
@@ -150,16 +140,48 @@ export async function POST(
 
 
   try {
-    if (
-      event.eventType ===
-        "subscription.created" ||
-      event.eventType ===
-        "subscription.updated"
+    switch (
+      event.eventType
     ) {
-      await processSubscriptionEvent(
-        event.data,
-        occurredAt
-      );
+      case "customer.created":
+
+      case "customer.updated":
+        await handleCustomerEvent(
+          event as
+            VerifiedWebhook<Customer>
+        );
+
+        break;
+
+
+      case "transaction.completed":
+        await handleTransactionCompletedEvent(
+          event as
+            VerifiedWebhook<Transaction>
+        );
+
+        break;
+
+
+      case "subscription.created":
+
+      case "subscription.updated":
+
+      case "subscription.canceled":
+        await handleSubscriptionEvent(
+          event as
+            VerifiedWebhook<Subscription>
+        );
+
+        break;
+
+
+      default:
+        /*
+         * Verified events that we don't
+         * currently need are safely ignored.
+         */
+        break;
     }
 
 
@@ -181,11 +203,15 @@ export async function POST(
     });
   } catch (error) {
     console.error(
-      "Paddle webhook processing failed:",
+      `Paddle webhook processing failed for ${event.eventType}:`,
       error
     );
 
 
+    /*
+     * Again, do not return 2xx when our
+     * fulfillment handler failed.
+     */
     return new Response(
       "Webhook processing failed.",
       {
@@ -196,95 +222,299 @@ export async function POST(
 }
 
 
-async function processSubscriptionEvent(
-  data:
-    PaddleSubscriptionData,
-
-  occurredAt: string
+async function handleCustomerEvent(
+  event:
+    VerifiedWebhook<Customer>
 ) {
-  const existing =
-    await getBillingSubscriptionByPaddleIdRepository(
-      data.id
+  const occurredAt =
+    toIsoString(
+      event.occurredAt
     );
+
+
+  const customer =
+    event.data;
 
 
   /*
-   * Ignore older events that arrived
-   * after a newer subscription event.
+   * customData normally won't have our
+   * Clerk ID because checkout custom data
+   * lives on the transaction/subscription.
+   *
+   * But support it when present.
    */
-  if (
-    existing &&
-    new Date(
-      existing.occurredAt
-    ).getTime() >=
-      new Date(
-        occurredAt
-      ).getTime()
-  ) {
-    return;
+  const customUserId =
+    readClerkUserId(
+      customer.customData
+    );
+
+
+  const resolvedUserId =
+    customUserId ??
+    await resolveUserIdForCustomerRepository(
+      customer.id
+    );
+
+
+  await upsertBillingCustomerRepository(
+    {
+      paddleCustomerId:
+        customer.id,
+
+      userId:
+        resolvedUserId,
+
+      email:
+        customer.email,
+
+      occurredAt,
+    }
+  );
+
+
+  if (resolvedUserId) {
+    await linkBillingIdentityRepository(
+      customer.id,
+      resolvedUserId
+    );
   }
+}
+
+
+async function handleTransactionCompletedEvent(
+  event:
+    VerifiedWebhook<Transaction>
+) {
+  const occurredAt =
+    toIsoString(
+      event.occurredAt
+    );
+
+
+  const transaction =
+    event.data;
+
+
+  const firstItem =
+    transaction.items[0];
+
+
+  const priceId =
+    firstItem?.price?.id ??
+    null;
+
+
+  const productId =
+    firstItem?.price
+      ?.productId ??
+    null;
 
 
   const customUserId =
-    typeof data.customData
-      ?.clerk_user_id ===
-    "string"
-      ? data.customData
-          .clerk_user_id
-      : null;
+    readClerkUserId(
+      transaction.customData
+    );
 
 
-  const userId =
+  const resolvedUserId =
     customUserId ??
-    existing?.userId;
+    (
+      transaction.customerId
+        ? await resolveUserIdForCustomerRepository(
+            transaction.customerId
+          )
+        : null
+    );
 
 
-  if (!userId) {
-    throw new Error(
-      "Paddle subscription does not contain a Clerk user ID."
+  await upsertBillingTransactionRepository(
+    {
+      paddleTransactionId:
+        transaction.id,
+
+      paddleCustomerId:
+        transaction.customerId,
+
+      paddleSubscriptionId:
+        transaction.subscriptionId,
+
+      userId:
+        resolvedUserId,
+
+      status:
+        transaction.status,
+
+      priceId,
+
+      productId,
+
+      /*
+       * Store Paddle's value as-is.
+       * Don't perform money calculations here.
+       */
+      total:
+        transaction.details
+          ?.totals
+          ?.total ??
+        null,
+
+      currencyCode:
+        transaction
+          .currencyCode,
+
+      occurredAt,
+    }
+  );
+
+
+  if (
+    transaction.customerId &&
+    resolvedUserId
+  ) {
+    await linkBillingIdentityRepository(
+      transaction.customerId,
+      resolvedUserId
     );
   }
+}
 
 
-  const firstPrice =
-    data.items?.[0]?.price;
+async function handleSubscriptionEvent(
+  event:
+    VerifiedWebhook<Subscription>
+) {
+  const occurredAt =
+    toIsoString(
+      event.occurredAt
+    );
+
+
+  const subscription =
+    event.data;
+
+
+  const firstItem =
+    subscription.items[0];
+
+
+  const priceId =
+    firstItem?.price?.id ??
+    null;
+
+
+  const productId =
+    firstItem?.price
+      ?.productId ??
+    null;
+
+
+  const plan =
+    getPlanFromPriceId(
+      priceId
+    );
+
+
+  const customUserId =
+    readClerkUserId(
+      subscription.customData
+    );
+
+
+  const resolvedUserId =
+    customUserId ??
+    await resolveUserIdForCustomerRepository(
+      subscription.customerId
+    );
 
 
   await upsertBillingSubscriptionRepository(
     {
-      userId,
+      userId:
+        resolvedUserId,
 
       paddleCustomerId:
-        data.customerId,
+        subscription
+          .customerId,
 
       paddleSubscriptionId:
-        data.id,
+        subscription.id,
 
       status:
-        data.status,
+        subscription.status,
 
-      priceId:
-        firstPrice?.id ??
-        existing?.priceId ??
+      priceId,
+
+      productId,
+
+      planTier:
+        plan?.plan ??
         null,
 
-      productId:
-        firstPrice
-          ?.productId ??
-        existing?.productId ??
+      billingInterval:
+        plan?.interval ??
         null,
 
       currentPeriodEnd:
-        data.currentBillingPeriod
+        subscription
+          .currentBillingPeriod
           ?.endsAt ??
         null,
 
+      scheduledChangeAction:
+        subscription
+          .scheduledChange
+          ?.action ??
+        null,
+
       scheduledChangeAt:
-        data.scheduledChange
+        subscription
+          .scheduledChange
           ?.effectiveAt ??
+        null,
+
+      canceledAt:
+        subscription
+          .canceledAt ??
         null,
 
       occurredAt,
     }
   );
+
+
+  if (resolvedUserId) {
+    await linkBillingIdentityRepository(
+      subscription.customerId,
+      resolvedUserId
+    );
+  }
+}
+
+
+function readClerkUserId(
+  customData:
+    Record<
+      string,
+      unknown
+    > | null
+) {
+  const value =
+    customData
+      ?.clerk_user_id;
+
+
+  return typeof value ===
+    "string"
+    ? value
+    : null;
+}
+
+
+function toIsoString(
+  value:
+    string | Date
+) {
+  return value instanceof Date
+    ? value.toISOString()
+    : value;
 }

@@ -10,6 +10,10 @@ import {
   renderResumePdf,
 } from "@/lib/pdf/render-resume-pdf";
 
+import {
+  assertTemplateAccessService,
+} from "@/services/billing.service";
+
 
 export const runtime =
   "nodejs";
@@ -20,9 +24,10 @@ export const dynamic =
 
 
 interface PdfRouteContext {
-  params: Promise<{
-    id: string;
-  }>;
+  params:
+    Promise<{
+      id: string;
+    }>;
 }
 
 
@@ -30,16 +35,16 @@ export async function GET(
   _request: Request,
   context: PdfRouteContext
 ) {
+  /*
+   * Authentication is always checked
+   * server-side.
+   */
   const {
-    isAuthenticated,
     userId,
   } = await auth();
 
 
-  if (
-    !isAuthenticated ||
-    !userId
-  ) {
+  if (!userId) {
     return new Response(
       "Unauthorized",
       {
@@ -49,7 +54,9 @@ export async function GET(
   }
 
 
-  const { id } =
+  const {
+    id,
+  } =
     await context.params;
 
 
@@ -63,6 +70,15 @@ export async function GET(
   }
 
 
+  /*
+   * getResumeService must query using BOTH:
+   *
+   * resume ID
+   * Clerk user ID
+   *
+   * so one user cannot download another
+   * user's resume.
+   */
   const resume =
     await getResumeService(
       id,
@@ -80,6 +96,27 @@ export async function GET(
   }
 
 
+  /*
+   * Premium access is checked again here.
+   *
+   * Never rely only on hiding templates
+   * in the browser.
+   */
+  try {
+    await assertTemplateAccessService(
+      userId,
+      resume.template
+    );
+  } catch {
+    return new Response(
+      "Your current plan does not include this resume template.",
+      {
+        status: 403,
+      }
+    );
+  }
+
+
   try {
     const pdfBuffer =
       await renderResumePdf(
@@ -87,6 +124,10 @@ export async function GET(
       );
 
 
+    /*
+     * Response accepts Uint8Array cleanly
+     * in Next.js Route Handlers.
+     */
     const pdfBytes =
       new Uint8Array(
         pdfBuffer
@@ -118,8 +159,16 @@ export async function GET(
               pdfBytes.byteLength
             ),
 
+          /*
+           * Resume PDFs contain private
+           * user data and should not be
+           * cached by shared infrastructure.
+           */
           "Cache-Control":
             "private, no-store, max-age=0",
+
+          "X-Content-Type-Options":
+            "nosniff",
         },
       }
     );
@@ -151,9 +200,18 @@ function createFilename(
         ""
       )
       .trim()
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .slice(0, 80);
+      .replace(
+        /\s+/g,
+        "-"
+      )
+      .replace(
+        /-+/g,
+        "-"
+      )
+      .slice(
+        0,
+        80
+      );
 
 
   return `${

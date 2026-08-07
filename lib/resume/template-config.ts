@@ -25,11 +25,16 @@ export interface ResumeTemplateTheme {
 
   description: string;
 
-  headerStyle: ResumeHeaderStyle;
+  recommendedFor: string;
 
-  sectionStyle: ResumeSectionStyle;
+  headerStyle:
+    ResumeHeaderStyle;
 
-  skillsStyle: ResumeSkillsStyle;
+  sectionStyle:
+    ResumeSectionStyle;
+
+  skillsStyle:
+    ResumeSkillsStyle;
 
   colors: {
     paper: string;
@@ -65,134 +70,186 @@ export const RESUME_TEMPLATE_THEMES:
     ResumeTemplateTheme
   > = {
   modern: {
-    name: "Modern",
+    name:
+      "Modern",
 
     description:
       "Clean, technical and highly readable.",
 
-    headerStyle: "solid",
+    recommendedFor:
+      "Technology, consulting, operations and general professional roles.",
 
-    sectionStyle: "line",
+    headerStyle:
+      "solid",
 
-    skillsStyle: "pills",
+    sectionStyle:
+      "line",
+
+    skillsStyle:
+      "pills",
 
     colors: {
-      paper: "#ffffff",
+      paper:
+        "#ffffff",
 
-      ink: "#172033",
+      ink:
+        "#172033",
 
-      muted: "#5f6b7a",
+      muted:
+        "#5f6b7a",
 
-      accent: "#2563eb",
+      accent:
+        "#2563eb",
 
-      accentSoft: "#eff6ff",
+      accentSoft:
+        "#eff6ff",
 
-      line: "#dbe3ef",
+      line:
+        "#dbe3ef",
 
-      header: "#101827",
+      header:
+        "#101827",
 
-      headerText: "#ffffff",
+      headerText:
+        "#ffffff",
     },
 
     browserFontFamily:
       "Arial, Helvetica, sans-serif",
 
-    pdfBodyFont: "Helvetica",
+    pdfBodyFont:
+      "Helvetica",
 
     pdfHeadingFont:
       "Helvetica-Bold",
 
-    leftAccentWidth: 0,
+    leftAccentWidth:
+      0,
   },
 
 
   executive: {
-    name: "Executive",
+    name:
+      "Executive",
 
     description:
       "Elegant and authoritative with restrained styling.",
 
-    headerStyle: "editorial",
+    recommendedFor:
+      "Leadership, finance, management, law and senior professional roles.",
 
-    sectionStyle: "classic",
+    headerStyle:
+      "editorial",
 
-    skillsStyle: "inline",
+    sectionStyle:
+      "classic",
+
+    skillsStyle:
+      "inline",
 
     colors: {
-      paper: "#fffefb",
+      paper:
+        "#fffefb",
 
-      ink: "#211f1c",
+      ink:
+        "#211f1c",
 
-      muted: "#6f6960",
+      muted:
+        "#6f6960",
 
-      accent: "#9a6635",
+      accent:
+        "#9a6635",
 
-      accentSoft: "#f8f2ea",
+      accentSoft:
+        "#f8f2ea",
 
-      line: "#cfc6b9",
+      line:
+        "#cfc6b9",
 
-      header: "#fffefb",
+      header:
+        "#fffefb",
 
-      headerText: "#211f1c",
+      headerText:
+        "#211f1c",
     },
 
     browserFontFamily:
       "Georgia, 'Times New Roman', serif",
 
-    pdfBodyFont: "Times-Roman",
+    pdfBodyFont:
+      "Times-Roman",
 
-    pdfHeadingFont: "Times-Bold",
+    pdfHeadingFont:
+      "Times-Bold",
 
-    leftAccentWidth: 0,
+    leftAccentWidth:
+      0,
   },
 
 
   creative: {
-    name: "Creative",
+    name:
+      "Creative",
 
     description:
       "Distinctive and contemporary while remaining ATS-conscious.",
 
-    headerStyle: "accent",
+    recommendedFor:
+      "Marketing, product, design, media and creative technology roles.",
 
-    sectionStyle: "label",
+    headerStyle:
+      "accent",
 
-    skillsStyle: "pills",
+    sectionStyle:
+      "label",
+
+    skillsStyle:
+      "pills",
 
     colors: {
-      paper: "#ffffff",
+      paper:
+        "#ffffff",
 
-      ink: "#252236",
+      ink:
+        "#252236",
 
-      muted: "#6f6980",
+      muted:
+        "#6f6980",
 
-      accent: "#7c3aed",
+      accent:
+        "#7c3aed",
 
-      accentSoft: "#f3efff",
+      accentSoft:
+        "#f3efff",
 
-      line: "#ded7ef",
+      line:
+        "#ded7ef",
 
-      header: "#f7f4ff",
+      header:
+        "#f7f4ff",
 
-      headerText: "#2f2254",
+      headerText:
+        "#2f2254",
     },
 
     browserFontFamily:
       "Arial, Helvetica, sans-serif",
 
-    pdfBodyFont: "Helvetica",
+    pdfBodyFont:
+      "Helvetica",
 
     pdfHeadingFont:
       "Helvetica-Bold",
 
-    leftAccentWidth: 10,
+    leftAccentWidth:
+      10,
   },
 };
 
 
 export function getResumeTemplateTheme(
   template: ResumeTemplate
-) {
+): ResumeTemplateTheme {
   return (
     RESUME_TEMPLATE_THEMES[
       template

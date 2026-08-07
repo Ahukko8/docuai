@@ -3,7 +3,12 @@
 import {
   Check,
   Crown,
+  LockKeyhole,
 } from "lucide-react";
+
+import {
+  useRouter,
+} from "next/navigation";
 
 import {
   RESUME_TEMPLATE_THEMES,
@@ -16,70 +21,94 @@ import type {
 
 interface TemplateSelectorProps {
   selected:
-  ResumeTemplate;
+    ResumeTemplate;
 
-  hasProAccess:
-  boolean;
+  canUsePremiumTemplates:
+    boolean;
 
   onSelect:
-  (
-    template:
-      ResumeTemplate
-  ) => void;
+    (
+      template:
+        ResumeTemplate
+    ) => void;
 }
 
 
 const templateOrder:
   ResumeTemplate[] = [
-    "modern",
-    "executive",
-    "creative",
-  ];
+  "modern",
+  "executive",
+  "creative",
+];
 
 
 export default function TemplateSelector({
   selected,
-  hasProAccess,
+  canUsePremiumTemplates,
   onSelect,
 }: TemplateSelectorProps) {
+  const router =
+    useRouter();
+
+
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div
+      className="
+        grid
+        gap-4
+        md:grid-cols-3
+      "
+    >
       {templateOrder.map(
         (templateId) => {
           const template =
             RESUME_TEMPLATE_THEMES[
-            templateId
+              templateId
             ];
 
 
           const active =
-            selected === templateId;
+            selected ===
+            templateId;
 
 
           const isPremium =
-            templateId !== "modern";
+            templateId !==
+            "modern";
+
 
           const isLocked =
             isPremium &&
-            !hasProAccess;
+            !canUsePremiumTemplates;
+
+
+          function handleSelect() {
+            if (isLocked) {
+              router.push(
+                "/pricing"
+              );
+
+              return;
+            }
+
+
+            onSelect(
+              templateId
+            );
+          }
 
 
           return (
             <button
-              key={templateId}
+              key={
+                templateId
+              }
 
               type="button"
 
-              onClick={() => {
-                if (isLocked) {
-                  window.location.href =
-                    "/dashboard/billing";
-
-                  return;
-                }
-
-                onSelect(templateId);
-              }}
+              onClick={
+                handleSelect
+              }
 
               className={`
                 relative
@@ -90,9 +119,10 @@ export default function TemplateSelector({
                 text-left
                 transition
 
-                ${active
-                  ? "border-purple-500 bg-purple-500/10 ring-2 ring-purple-500/10"
-                  : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]"
+                ${
+                  active
+                    ? "border-purple-500 bg-purple-500/10 ring-2 ring-purple-500/10"
+                    : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]"
                 }
               `}
             >
@@ -108,12 +138,20 @@ export default function TemplateSelector({
                   <div
                     className="
                       flex
+                      flex-wrap
                       items-center
                       gap-2
                     "
                   >
-                    <h3 className="font-medium text-white">
-                      {template.name}
+                    <h3
+                      className="
+                        font-medium
+                        text-white
+                      "
+                    >
+                      {
+                        template.name
+                      }
                     </h3>
 
 
@@ -132,7 +170,12 @@ export default function TemplateSelector({
                           text-amber-300
                         "
                       >
-                        <Crown className="h-3 w-3" />
+                        <Crown
+                          className="
+                            h-3
+                            w-3
+                          "
+                        />
 
                         PRO
                       </span>
@@ -148,17 +191,15 @@ export default function TemplateSelector({
                       text-zinc-400
                     "
                   >
-                    {template.description}
+                    {
+                      template.description
+                    }
                   </p>
-                  {isLocked && (
-                    <p className="mt-3 text-[11px] font-medium text-amber-300">
-                      Upgrade to Pro to use this template
-                    </p>
-                  )}
                 </div>
 
 
-                {active && (
+                {active &&
+                !isLocked ? (
                   <span
                     className="
                       flex
@@ -172,9 +213,35 @@ export default function TemplateSelector({
                       text-white
                     "
                   >
-                    <Check className="h-4 w-4" />
+                    <Check
+                      className="
+                        h-4
+                        w-4
+                      "
+                    />
                   </span>
-                )}
+                ) : isLocked ? (
+                  <span
+                    className="
+                      flex
+                      h-6
+                      w-6
+                      shrink-0
+                      items-center
+                      justify-center
+                      rounded-full
+                      bg-amber-500/10
+                      text-amber-300
+                    "
+                  >
+                    <LockKeyhole
+                      className="
+                        h-3.5
+                        w-3.5
+                      "
+                    />
+                  </span>
+                ) : null}
               </div>
 
 
@@ -189,7 +256,34 @@ export default function TemplateSelector({
                   text-zinc-500
                 "
               >
+                {
+                  template.recommendedFor
+                }
               </p>
+
+
+              {isLocked && (
+                <p
+                  className="
+                    mt-3
+                    flex
+                    items-center
+                    gap-1.5
+                    text-[11px]
+                    font-medium
+                    text-amber-300
+                  "
+                >
+                  <LockKeyhole
+                    className="
+                      h-3
+                      w-3
+                    "
+                  />
+
+                  Pro or Advanced required
+                </p>
+              )}
             </button>
           );
         }

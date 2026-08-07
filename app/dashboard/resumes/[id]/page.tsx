@@ -20,9 +20,9 @@ import {
 
 interface EditResumePageProps {
   params:
-  Promise<{
-    id: string;
-  }>;
+    Promise<{
+      id: string;
+    }>;
 }
 
 
@@ -35,25 +35,29 @@ export default async function EditResumePage({
 
 
   if (!userId) {
-    redirect("/");
+    redirect(
+      "/sign-in"
+    );
   }
 
 
   const {
     id,
-  } = await params;
+  } =
+    await params;
 
 
   const [
     resume,
     entitlements,
-  ] = await Promise.all([
-    getResumeAction(id),
+  ] =
+    await Promise.all([
+      getResumeAction(id),
 
-    getUserEntitlementsService(
-      userId
-    ),
-  ]);
+      getUserEntitlementsService(
+        userId
+      ),
+    ]);
 
 
   if (!resume) {
@@ -62,28 +66,47 @@ export default async function EditResumePage({
 
 
   return (
-    <div className="mx-auto max-w-[1600px]">
-
+    <div
+      className="
+        mx-auto
+        max-w-[1600px]
+      "
+    >
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">
+        <h1
+          className="
+            text-3xl
+            font-bold
+            tracking-tight
+          "
+        >
           Edit Resume
         </h1>
 
-        <p className="mt-2 text-sm text-zinc-400">
-          Build, improve and export your professional resume.
+
+        <p
+          className="
+            mt-2
+            text-sm
+            text-zinc-400
+          "
+        >
+          Build, improve and export
+          your professional resume.
         </p>
       </div>
 
 
       <ResumeEditor
-        initialResume={resume}
+        initialResume={
+          resume
+        }
 
-        hasProAccess={
+        canUsePremiumTemplates={
           entitlements
-            .hasProAccess
+            .canUsePremiumTemplates
         }
       />
-
     </div>
   );
 }

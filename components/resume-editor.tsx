@@ -42,10 +42,8 @@ import ResumeTemplatePreview from "@/components/resume/resume-template-preview";
 
 
 interface ResumeEditorProps {
-  initialResume:
-  ResumeEditorData;
-
-  hasProAccess: boolean;
+  initialResume: ResumeEditorData;
+  canUsePremiumTemplates: boolean;
 }
 
 
@@ -70,13 +68,9 @@ const inputClassName = `
 
 export default function ResumeEditor({
   initialResume,
-  hasProAccess,
+  canUsePremiumTemplates,
 }: ResumeEditorProps) {
-  /*
-   * The initial state comes from the Server Component.
-   * This keeps the initial server and browser render
-   * consistent and avoids hydration mismatches.
-   */
+
   const [
     resume,
     setResume,
@@ -471,24 +465,17 @@ export default function ResumeEditor({
 
               <Field label="Template">
                 <TemplateSelector
-                  selected={
-                    resume.template
+                  selected={resume.template}
+                  canUsePremiumTemplates={
+                    canUsePremiumTemplates
                   }
-
-                  hasProAccess={
-                    hasProAccess
-                  }
-
-                  onSelect={(template) =>
-                    setResume(
-                      (current) => ({
-                        ...current,
-                        template,
-                      })
-                    )
-                  }
-                />
-              </Field>
+                  onSelect={(template) => {
+                    setResume((current) => ({
+                      ...current,
+                      template,
+                    }));
+                  }}
+                />              </Field>
             </EditorSection>
 
 

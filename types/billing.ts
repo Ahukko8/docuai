@@ -1,6 +1,13 @@
 export type AppPlan =
   | "free"
-  | "pro";
+  | "starter"
+  | "pro"
+  | "advanced";
+
+
+export type BillingInterval =
+  | "month"
+  | "year";
 
 
 export type PaddleSubscriptionStatus =
@@ -11,8 +18,21 @@ export type PaddleSubscriptionStatus =
   | "canceled";
 
 
+export interface BillingCustomer {
+  paddleCustomerId: string;
+
+  userId:
+    string | null;
+
+  email: string;
+
+  occurredAt: string;
+}
+
+
 export interface BillingSubscription {
-  userId: string;
+  userId:
+    string | null;
 
   paddleCustomerId: string;
 
@@ -27,10 +47,52 @@ export interface BillingSubscription {
   productId:
     string | null;
 
+  planTier:
+    AppPlan | null;
+
+  billingInterval:
+    BillingInterval | null;
+
   currentPeriodEnd:
     string | null;
 
+  scheduledChangeAction:
+    string | null;
+
   scheduledChangeAt:
+    string | null;
+
+  canceledAt:
+    string | null;
+
+  occurredAt: string;
+}
+
+
+export interface BillingTransaction {
+  paddleTransactionId: string;
+
+  paddleCustomerId:
+    string | null;
+
+  paddleSubscriptionId:
+    string | null;
+
+  userId:
+    string | null;
+
+  status: string;
+
+  priceId:
+    string | null;
+
+  productId:
+    string | null;
+
+  total:
+    string | null;
+
+  currencyCode:
     string | null;
 
   occurredAt: string;
@@ -40,7 +102,7 @@ export interface BillingSubscription {
 export interface UserEntitlements {
   plan: AppPlan;
 
-  hasProAccess: boolean;
+  hasPaidAccess: boolean;
 
   canUsePremiumTemplates: boolean;
 
