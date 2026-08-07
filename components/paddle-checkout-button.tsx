@@ -21,43 +21,128 @@ import {
 interface PaddleCheckoutButtonProps {
   userId: string;
 
-  email:
-    string | null;
+  email: string | null;
+}
+
+
+interface PaddleEventPayload {
+  name?: string;
+
+  type?: string;
+
+  code?: string;
+
+  detail?: string;
+
+  documentation_url?: string;
+
+  errors?: Array<{
+    field?: string;
+
+    message?: string;
+  }>;
 }
 
 
 let paddlePromise:
-  Promise<
-    Paddle | undefined
-  > | null = null;
+  Promise<Paddle | undefined> | null =
+  null;
 
 
 function getPaddle() {
-  if (!paddlePromise) {
-    const token =
-      process.env
-        .NEXT_PUBLIC_PADDLE_CLIENT_TOKEN;
-
-
-    if (!token) {
-      throw new Error(
-        "NEXT_PUBLIC_PADDLE_CLIENT_TOKEN is missing."
-      );
-    }
-
-
-    paddlePromise =
-      initializePaddle({
-        token,
-
-        environment:
-          process.env
-            .NEXT_PUBLIC_PADDLE_ENVIRONMENT ===
-          "production"
-            ? "production"
-            : "sandbox",
-      });
+  if (paddlePromise) {
+    return paddlePromise;
   }
+
+
+  const token =
+    process.env
+      .NEXT_PUBLIC_PADDLE_CLIENT_TOKEN;
+
+
+  const environment =
+    process.env
+      .NEXT_PUBLIC_PADDLE_ENVIRONMENT;
+
+
+  if (!token) {
+    throw new Error(
+      "NEXT_PUBLIC_PADDLE_CLIENT_TOKEN is missing."
+    );
+  }
+
+
+  if (
+    environment === "sandbox" &&
+    !token.startsWith("test_")
+  ) {
+    throw new Error(
+      "The sandbox Paddle client token must begin with test_."
+    );
+  }
+
+
+  paddlePromise =
+    initializePaddle({
+      token,
+
+      environment:
+        environment ===
+        "production"
+          ? "production"
+          : "sandbox",
+
+      eventCallback: (
+        paddleEvent
+      ) => {
+        const event =
+          paddleEvent as unknown as
+            PaddleEventPayload;
+
+
+        if (
+          event.name ===
+            "checkout.error" ||
+          event.name ===
+            "checkout.warning" ||
+          event.name ===
+            "checkout.payment.error" ||
+          event.name ===
+            "checkout.payment.failed"
+        ) {
+          console.error(
+            "[Paddle checkout problem]",
+            {
+              name:
+                event.name,
+
+              type:
+                event.type,
+
+              code:
+                event.code,
+
+              detail:
+                event.detail,
+
+              errors:
+                event.errors,
+
+              documentationUrl:
+                event.documentation_url,
+            }
+          );
+
+          return;
+        }
+
+
+        console.log(
+          "[Paddle checkout event]",
+          paddleEvent
+        );
+      },
+    });
 
 
   return paddlePromise;
@@ -91,15 +176,46 @@ export default function PaddleCheckoutButton({
       }
 
 
+      if (
+        !priceId.startsWith(
+          "pri_"
+        )
+      ) {
+        throw new Error(
+          "The Paddle price ID must begin with pri_. Do not use the product ID."
+        );
+      }
+
+
       const paddle =
         await getPaddle();
 
 
       if (!paddle) {
         throw new Error(
-          "Unable to initialize Paddle Checkout."
+          "Paddle failed to initialize."
         );
       }
+
+
+      console.log(
+        "[Paddle checkout configuration]",
+        {
+          environment:
+            process.env
+              .NEXT_PUBLIC_PADDLE_ENVIRONMENT,
+
+          priceId,
+
+          tokenPrefix:
+            process.env
+              .NEXT_PUBLIC_PADDLE_CLIENT_TOKEN
+              ?.slice(0, 5),
+
+          hasCustomerEmail:
+            Boolean(email),
+        }
+      );
 
 
       paddle.Checkout.open({
@@ -111,23 +227,32 @@ export default function PaddleCheckoutButton({
           },
         ],
 
-        customer:
-          email
-            ? {
-                email,
-              }
-            : undefined,
-
+        /*
+         * Keep Clerk's ID on the Paddle
+         * transaction and subscription.
+         */
         customData: {
           clerk_user_id:
             userId,
         },
 
+        /*
+         * Temporarily do not prefill the
+         * customer. This removes invalid
+         * customer data as a possible cause.
+         */
         settings: {
           displayMode:
             "overlay",
 
-          theme: "dark",
+          variant:
+            "one-page",
+
+          theme:
+            "light",
+
+          locale:
+            "en",
 
           successUrl:
             `${window.location.origin}/dashboard/billing?checkout=success`,
@@ -135,7 +260,7 @@ export default function PaddleCheckoutButton({
       });
     } catch (error) {
       console.error(
-        "Paddle Checkout:",
+        "[Paddle initialization error]",
         error
       );
 
@@ -143,7 +268,7 @@ export default function PaddleCheckoutButton({
       window.alert(
         error instanceof Error
           ? error.message
-          : "Unable to open checkout."
+          : "Unable to open Paddle checkout."
       );
     } finally {
       setLoading(false);
