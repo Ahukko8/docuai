@@ -166,7 +166,7 @@ export default async function BillingPage({
 
 
           <p className="mt-2 text-3xl font-bold">
-            $9.99
+            $250
             <span className="text-sm font-normal text-zinc-500">
               /month
             </span>
