@@ -7,7 +7,7 @@ import {
   redirect,
 } from "next/navigation";
 
-import PaddleCheckoutButton from "@/components/paddle-checkout-button";
+import Link from "next/link";
 
 import {
   getUserEntitlementsService,
@@ -16,9 +16,9 @@ import {
 
 interface BillingPageProps {
   searchParams:
-    Promise<{
-      checkout?: string;
-    }>;
+  Promise<{
+    checkout?: string;
+  }>;
 }
 
 
@@ -73,8 +73,8 @@ export default async function BillingPage({
 
       {query.checkout ===
         "success" && (
-        <div
-          className="
+          <div
+            className="
             mt-6
             rounded-xl
             border
@@ -84,10 +84,10 @@ export default async function BillingPage({
             text-sm
             text-emerald-300
           "
-        >
-          Payment completed. Paddle is verifying your subscription. Refresh this page shortly if Pro access is not visible yet.
-        </div>
-      )}
+          >
+            Payment completed. Paddle is verifying your subscription. Refresh this page shortly if Pro access is not visible yet.
+          </div>
+        )}
 
 
       <div
@@ -198,15 +198,30 @@ export default async function BillingPage({
                 </span>
               </p>
             ) : (
-              <PaddleCheckoutButton
-                userId={userId}
-                email={email}
-              />
+              < Link
+                href="/pricing"
+                className="
+            inline-flex
+            h-10
+            items-center
+            justify-center
+            rounded-md
+            bg-purple-600
+            px-4
+            text-sm
+            font-medium
+            text-white
+            transition
+            hover:bg-purple-500
+            "
+              >
+                View plans
+              </Link>
             )}
 
           </div>
         </article>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
