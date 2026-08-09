@@ -3,9 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  ArrowRight,
   Check,
-  FileText,
   Sparkles,
 } from "lucide-react";
 
@@ -187,7 +185,7 @@ export default function Hero() {
               sm:w-auto
             "
           >
-            <Link href="/dashboard/resumes">
+            <Link href="/dashboard">
               Create your resume
             </Link>
           </Button>
