@@ -1,6 +1,6 @@
 import Navbar from "@/components/navbar";
 import Hero from "@/components/hero";
-import ResumeGenerator from "@/components/resume-generator";
+import VerificationTrustSection from "@/components/verification-trust-section";
 
 
 export default function Home() {
@@ -13,7 +13,7 @@ export default function Home() {
 
       <Hero />
 
-      <ResumeGenerator />
+      <VerificationTrustSection />
 
     </main>
 

@@ -5,6 +5,8 @@ import {
 
 import "./globals.css";
 
+import SiteFooter from "@/components/site-footer";
+
 
 export const metadata: Metadata = {
   title: "CareerAI",
@@ -30,6 +32,8 @@ return (
 {children}
 
 </body>
+
+ <SiteFooter />
 
 </html>
 
