@@ -6,39 +6,44 @@ import {
 import "./globals.css";
 
 import SiteFooter from "@/components/site-footer";
+import Navbar from "@/components/navbar";
 
 
 export const metadata: Metadata = {
   title: "CareerAI",
   description:
-  "AI powered resume builder and career assistant",
+    "AI powered resume builder and career assistant",
 };
 
 
 export default function RootLayout({
-children,
+  children,
 }: Readonly<{
-children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
 
-return (
+  return (
 
-<ClerkProvider>
+    <ClerkProvider>
 
-<html lang="en">
+      <html lang="en">
 
-<body>
+        <body>
 
-{children}
+          <Navbar />
 
-</body>
+          {children}
 
- <SiteFooter />
+        </body>
 
-</html>
 
-</ClerkProvider>
 
-);
+      </html>
+
+      <SiteFooter />
+
+    </ClerkProvider>
+
+  );
 
 }

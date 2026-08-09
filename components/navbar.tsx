@@ -9,7 +9,6 @@ import {
 
 import {
   FileText,
-  LayoutDashboard,
 } from "lucide-react";
 
 import {
@@ -98,68 +97,7 @@ export default function Navbar() {
         </Link>
 
 
-        {/* ========================= */}
-        {/* DESKTOP NAVIGATION */}
-        {/* ========================= */}
 
-        <div
-          className="
-            hidden
-            items-center
-            gap-7
-            md:flex
-          "
-        >
-          <Link
-            href="/pricing"
-            className="
-              text-sm
-              font-medium
-              text-zinc-400
-              transition
-              hover:text-white
-            "
-          >
-            Pricing
-          </Link>
-
-
-          <Link
-            href="/contact"
-            className="
-              text-sm
-              font-medium
-              text-zinc-400
-              transition
-              hover:text-white
-            "
-          >
-            Contact
-          </Link>
-
-
-          {/* Only visible to authenticated users */}
-
-          <Show when="signed-in">
-            <Link
-              href="/dashboard/resumes"
-              className="
-                text-sm
-                font-medium
-                text-zinc-400
-                transition
-                hover:text-white
-              "
-            >
-              My Resumes
-            </Link>
-          </Show>
-        </div>
-
-
-        {/* ========================= */}
-        {/* AUTH AREA */}
-        {/* ========================= */}
 
         <div
           className="
@@ -252,14 +190,7 @@ export default function Navbar() {
               "
             >
               <Link href="/dashboard">
-                <LayoutDashboard
-                  className="
-                    mr-2
-                    h-4
-                    w-4
-                  "
-                />
-
+  
                 <span className="hidden sm:inline">
                   Dashboard
                 </span>
@@ -281,93 +212,6 @@ export default function Navbar() {
                 },
               }}
             />
-          </Show>
-        </div>
-      </div>
-
-
-      {/* ========================= */}
-      {/* MOBILE NAVIGATION */}
-      {/* ========================= */}
-
-      <div
-        className="
-          border-t
-          border-white/5
-          px-5
-          py-3
-          md:hidden
-        "
-      >
-        <div
-          className="
-            mx-auto
-            flex
-            max-w-7xl
-            items-center
-            gap-5
-            overflow-x-auto
-          "
-        >
-          <Link
-            href="/pricing"
-            className="
-              shrink-0
-              text-xs
-              font-medium
-              text-zinc-400
-              transition
-              hover:text-white
-            "
-          >
-            Pricing
-          </Link>
-
-
-          <Link
-            href="/contact"
-            className="
-              shrink-0
-              text-xs
-              font-medium
-              text-zinc-400
-              transition
-              hover:text-white
-            "
-          >
-            Contact
-          </Link>
-
-
-          <Show when="signed-in">
-            <Link
-              href="/dashboard/resumes"
-              className="
-                shrink-0
-                text-xs
-                font-medium
-                text-zinc-400
-                transition
-                hover:text-white
-              "
-            >
-              My Resumes
-            </Link>
-
-
-            <Link
-              href="/dashboard/billing"
-              className="
-                shrink-0
-                text-xs
-                font-medium
-                text-zinc-400
-                transition
-                hover:text-white
-              "
-            >
-              Billing
-            </Link>
           </Show>
         </div>
       </div>
