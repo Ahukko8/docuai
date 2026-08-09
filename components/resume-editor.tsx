@@ -9,7 +9,6 @@ import {
   Plus,
   Save,
   Trash2,
-  Loader2
 } from "lucide-react";
 
 import {
@@ -416,13 +415,13 @@ export default function ResumeEditor({
                 />
 
                 {isSaving
-                  ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  : <Trash2/>}
+                  ? "Saving..."
+                  : "Save now"}
               </Button>
             </div>
           </div>
 
-              
+
           <div
             className="
               space-y-10

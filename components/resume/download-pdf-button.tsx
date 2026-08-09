@@ -6,7 +6,6 @@ import {
 
 import {
   Download,
-  Loader2,
 } from "lucide-react";
 
 import {
@@ -160,8 +159,8 @@ export default function DownloadPdfButton({
       <Download className="mr-2 h-4 w-4" />
 
       {downloading
-        ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        : <Download className="mr-2 h-4 w-4" />}
+        ? "Preparing PDF..."
+        : "Download PDF"}
     </Button>
   );
 }

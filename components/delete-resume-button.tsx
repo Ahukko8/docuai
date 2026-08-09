@@ -9,9 +9,7 @@ import {
 } from "next/navigation";
 
 import {
-    Trash,
     Trash2,
-    Loader2
 } from "lucide-react";
 
 import {
@@ -148,8 +146,8 @@ export default function DeleteResumeButton({
             <Trash2 className="mr-2 h-4 w-4" />
 
             {isPending
-                ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                : <Trash className="mr-2 h-4 w-4" />}
+                ? "Deleting..."
+                : "Delete"}
         </Button>
     );
 }
