@@ -1,17 +1,12 @@
 import type {
-  CSSProperties,
-  ReactNode,
-} from "react";
+  ResumeEditorData,
+  ResumeEducation,
+  ResumeExperience,
+} from "@/types/resume";
 
 import {
   getResumeTemplateTheme,
 } from "@/lib/resume/template-config";
-
-import type {
-  ResumeEducation,
-  ResumeEditorData,
-  ResumeExperience,
-} from "@/types/resume";
 
 
 interface ResumeTemplatePreviewProps {
@@ -22,672 +17,1137 @@ interface ResumeTemplatePreviewProps {
 export default function ResumeTemplatePreview({
   resume,
 }: ResumeTemplatePreviewProps) {
+  switch (resume.template) {
+    case "executive":
+      return (
+        <ExecutiveResume
+          resume={resume}
+        />
+      );
+
+    case "creative":
+      return (
+        <CreativeResume
+          resume={resume}
+        />
+      );
+
+    default:
+      return (
+        <ModernResume
+          resume={resume}
+        />
+      );
+  }
+}
+
+
+export {
+  ResumeTemplatePreview,
+};
+
+
+/* ======================================= */
+/* MODERN */
+/* ======================================= */
+
+function ModernResume({
+  resume,
+}: ResumeTemplatePreviewProps) {
   const theme =
     getResumeTemplateTheme(
-      resume.template
+      "modern"
     );
 
-
   const experiences =
-    sortNewestFirst(
+    sortExperiences(
       resume.experience
-    ).filter(hasExperienceContent);
-
+    );
 
   const education =
-    sortNewestFirst(
+    sortEducation(
       resume.education
-    ).filter(hasEducationContent);
+    );
 
-
-  const skills =
-    resume.skills
-      .map((skill) => skill.trim())
-      .filter(Boolean);
-
-
-  const contactItems = [
-    resume.personalInfo.email,
-
-    resume.personalInfo.phone,
-
-    resume.personalInfo.location,
-
-    resume.personalInfo.linkedin,
-  ].filter(
-    (item): item is string =>
-      Boolean(item?.trim())
-  );
-
-
-  const headline =
-    getProfessionalHeadline(
+  const subtitle =
+    getProfessionalTitle(
       resume
     );
 
 
-  const pageStyle:
-    CSSProperties = {
-    backgroundColor:
-      theme.colors.paper,
+  return (
+    <ResumePaper
+      background={
+        theme.colors.paper
+      }
+      fontFamily={
+        theme
+          .browserFontFamily
+      }
+    >
+      <header
+        className="
+          px-8
+          py-9
+          sm:px-11
+          sm:py-10
+        "
+        style={{
+          backgroundColor:
+            theme.colors
+              .header,
 
-    color: theme.colors.ink,
+          color:
+            theme.colors
+              .headerText,
+        }}
+      >
+        <div
+          className="
+            h-1
+            w-12
+            rounded-full
+          "
+          style={{
+            backgroundColor:
+              theme.colors
+                .accent,
+          }}
+        />
 
-    fontFamily:
-      theme.browserFontFamily,
 
-    borderLeft:
-      theme.leftAccentWidth
-        ? `${theme.leftAccentWidth}px solid ${theme.colors.accent}`
-        : undefined,
-  };
+        <h1
+          className="
+            mt-5
+            text-[28px]
+            font-bold
+            leading-none
+            tracking-[-0.035em]
+            sm:text-[32px]
+          "
+        >
+          {getName(resume)}
+        </h1>
+
+
+        {subtitle && (
+          <p
+            className="
+              mt-3
+              text-[12px]
+              font-medium
+              tracking-wide
+            "
+            style={{
+              color:
+                "#C7D2FE",
+            }}
+          >
+            {subtitle}
+          </p>
+        )}
+
+
+        <ContactLine
+          resume={resume}
+          color="#CBD5E1"
+          className="mt-5"
+        />
+      </header>
+
+
+      <div
+        className="
+          space-y-7
+          px-8
+          py-8
+          sm:px-11
+          sm:py-10
+        "
+      >
+        {resume.summary && (
+          <ModernSection
+            title={
+              theme.labels
+                .summary
+            }
+            accent={
+              theme.colors
+                .accent
+            }
+            ink={
+              theme.colors
+                .ink
+            }
+          >
+            <p
+              className="
+                text-[10.5px]
+                leading-[1.65]
+              "
+              style={{
+                color:
+                  theme.colors
+                    .muted,
+              }}
+            >
+              {resume.summary}
+            </p>
+          </ModernSection>
+        )}
+
+
+        {experiences.length >
+          0 && (
+          <ModernSection
+            title={
+              theme.labels
+                .experience
+            }
+            accent={
+              theme.colors
+                .accent
+            }
+            ink={
+              theme.colors
+                .ink
+            }
+          >
+            <div className="space-y-6">
+              {experiences.map(
+                (
+                  experience
+                ) => (
+                  <ModernExperience
+                    key={
+                      experience.id
+                    }
+                    experience={
+                      experience
+                    }
+                    accent={
+                      theme
+                        .colors
+                        .accent
+                    }
+                    ink={
+                      theme
+                        .colors
+                        .ink
+                    }
+                    muted={
+                      theme
+                        .colors
+                        .muted
+                    }
+                  />
+                )
+              )}
+            </div>
+          </ModernSection>
+        )}
+
+
+        {education.length > 0 && (
+          <ModernSection
+            title={
+              theme.labels
+                .education
+            }
+            accent={
+              theme.colors
+                .accent
+            }
+            ink={
+              theme.colors
+                .ink
+            }
+          >
+            <div className="space-y-4">
+              {education.map(
+                (item) => (
+                  <EducationRow
+                    key={item.id}
+                    item={item}
+                    ink={
+                      theme
+                        .colors
+                        .ink
+                    }
+                    muted={
+                      theme
+                        .colors
+                        .muted
+                    }
+                    accent={
+                      theme
+                        .colors
+                        .accent
+                    }
+                  />
+                )
+              )}
+            </div>
+          </ModernSection>
+        )}
+
+
+        {resume.skills.length >
+          0 && (
+          <ModernSection
+            title={
+              theme.labels
+                .skills
+            }
+            accent={
+              theme.colors
+                .accent
+            }
+            ink={
+              theme.colors
+                .ink
+            }
+          >
+            <p
+              className="
+                text-[10px]
+                font-medium
+                leading-6
+              "
+              style={{
+                color:
+                  theme.colors
+                    .muted,
+              }}
+            >
+              {resume.skills.join(
+                "  •  "
+              )}
+            </p>
+          </ModernSection>
+        )}
+      </div>
+    </ResumePaper>
+  );
+}
+
+
+/* ======================================= */
+/* EXECUTIVE */
+/* ======================================= */
+
+function ExecutiveResume({
+  resume,
+}: ResumeTemplatePreviewProps) {
+  const theme =
+    getResumeTemplateTheme(
+      "executive"
+    );
+
+  const experiences =
+    sortExperiences(
+      resume.experience
+    );
+
+  const education =
+    sortEducation(
+      resume.education
+    );
+
+  const subtitle =
+    getProfessionalTitle(
+      resume
+    );
 
 
   return (
-    <aside
-      className="
-        min-w-0
-        xl:sticky
-        xl:top-8
-      "
+    <ResumePaper
+      background={
+        theme.colors.paper
+      }
+      fontFamily={
+        theme
+          .browserFontFamily
+      }
     >
       <div
         className="
-          mb-3
-          flex
-          items-center
-          justify-between
-          gap-3
+          px-8
+          py-10
+          sm:px-12
+          sm:py-12
         "
       >
-        <p className="text-sm font-medium text-zinc-400">
-          Live Preview
-        </p>
-
-
-        <span
+        <header
           className="
-            rounded-full
-            border
-            border-white/10
-            bg-white/[0.04]
-            px-2.5
-            py-1
-            text-[10px]
-            font-medium
-            uppercase
-            tracking-wider
-            text-zinc-400
+            text-center
           "
         >
-          {theme.name}
-        </span>
-      </div>
+          <div
+            className="
+              mx-auto
+              mb-7
+              h-px
+              w-full
+            "
+            style={{
+              backgroundColor:
+                theme.colors
+                  .accent,
+            }}
+          />
 
 
-      <div
-        className="
-          overflow-hidden
-          rounded-xl
-          bg-zinc-200
-          p-3
-          shadow-2xl
-        "
-      >
-        <article
-          style={pageStyle}
+          <h1
+            className="
+              text-[30px]
+              font-semibold
+              leading-none
+              tracking-[0.015em]
+              sm:text-[34px]
+            "
+            style={{
+              color:
+                theme.colors
+                  .ink,
 
-          className="
-            min-h-[850px]
-            overflow-hidden
-          "
-        >
-          <ResumeHeader
+              fontFamily:
+                theme
+                  .browserHeadingFontFamily,
+            }}
+          >
+            {getName(resume)}
+          </h1>
+
+
+          {subtitle && (
+            <p
+              className="
+                mt-4
+                text-[10px]
+                font-semibold
+                uppercase
+                tracking-[0.2em]
+              "
+              style={{
+                color:
+                  theme.colors
+                    .accent,
+              }}
+            >
+              {subtitle}
+            </p>
+          )}
+
+
+          <ContactLine
             resume={resume}
-
-            headline={headline}
-
-            contactItems={
-              contactItems
+            color={
+              theme.colors
+                .muted
             }
+            className="
+              mt-5
+              justify-center
+            "
           />
 
 
           <div
             className="
-              px-8
-              py-8
-              sm:px-10
+              mx-auto
+              mt-7
+              h-px
+              w-full
+            "
+            style={{
+              backgroundColor:
+                theme.colors
+                  .line,
+            }}
+          />
+        </header>
+
+
+        <div
+          className="
+            mt-9
+            space-y-9
+          "
+        >
+          {resume.summary && (
+            <ExecutiveSection
+              title={
+                theme.labels
+                  .summary
+              }
+              theme={theme}
+            >
+              <p
+                className="
+                  text-[10.5px]
+                  leading-[1.7]
+                "
+                style={{
+                  color:
+                    theme.colors
+                      .muted,
+                }}
+              >
+                {resume.summary}
+              </p>
+            </ExecutiveSection>
+          )}
+
+
+          {experiences.length >
+            0 && (
+            <ExecutiveSection
+              title={
+                theme.labels
+                  .experience
+              }
+              theme={theme}
+            >
+              <div className="space-y-7">
+                {experiences.map(
+                  (
+                    experience
+                  ) => (
+                    <ExecutiveExperience
+                      key={
+                        experience.id
+                      }
+                      experience={
+                        experience
+                      }
+                      ink={
+                        theme
+                          .colors
+                          .ink
+                      }
+                      muted={
+                        theme
+                          .colors
+                          .muted
+                      }
+                      accent={
+                        theme
+                          .colors
+                          .accent
+                      }
+                    />
+                  )
+                )}
+              </div>
+            </ExecutiveSection>
+          )}
+
+
+          {education.length > 0 && (
+            <ExecutiveSection
+              title={
+                theme.labels
+                  .education
+              }
+              theme={theme}
+            >
+              <div className="space-y-5">
+                {education.map(
+                  (item) => (
+                    <EducationRow
+                      key={item.id}
+                      item={item}
+                      ink={
+                        theme
+                          .colors
+                          .ink
+                      }
+                      muted={
+                        theme
+                          .colors
+                          .muted
+                      }
+                      accent={
+                        theme
+                          .colors
+                          .accent
+                      }
+                    />
+                  )
+                )}
+              </div>
+            </ExecutiveSection>
+          )}
+
+
+          {resume.skills.length >
+            0 && (
+            <ExecutiveSection
+              title={
+                theme.labels
+                  .skills
+              }
+              theme={theme}
+            >
+              <p
+                className="
+                  text-[10px]
+                  leading-6
+                  tracking-[0.02em]
+                "
+                style={{
+                  color:
+                    theme.colors
+                      .muted,
+                }}
+              >
+                {resume.skills.join(
+                  "   ·   "
+                )}
+              </p>
+            </ExecutiveSection>
+          )}
+        </div>
+
+
+        <div
+          className="
+            mt-10
+            h-px
+            w-full
+          "
+          style={{
+            backgroundColor:
+              theme.colors.line,
+          }}
+        />
+      </div>
+    </ResumePaper>
+  );
+}
+
+
+/* ======================================= */
+/* CREATIVE */
+/* ======================================= */
+
+function CreativeResume({
+  resume,
+}: ResumeTemplatePreviewProps) {
+  const theme =
+    getResumeTemplateTheme(
+      "creative"
+    );
+
+  const experiences =
+    sortExperiences(
+      resume.experience
+    );
+
+  const education =
+    sortEducation(
+      resume.education
+    );
+
+  const subtitle =
+    getProfessionalTitle(
+      resume
+    );
+
+
+  return (
+    <ResumePaper
+      background={
+        theme.colors.paper
+      }
+      fontFamily={
+        theme
+          .browserFontFamily
+      }
+    >
+      <div
+        className="
+          relative
+          min-h-full
+        "
+      >
+        <div
+          className="
+            absolute
+            bottom-0
+            left-0
+            top-0
+          "
+          style={{
+            width:
+              theme
+                .leftAccentWidth,
+
+            backgroundColor:
+              theme.colors
+                .accent,
+          }}
+        />
+
+
+        <div
+          className="
+            px-8
+            py-10
+            pl-10
+            sm:px-12
+            sm:py-12
+            sm:pl-14
+          "
+        >
+          <header>
+            <div
+              className="
+                inline-flex
+                items-center
+                rounded-full
+                px-3
+                py-1
+                text-[8px]
+                font-bold
+                uppercase
+                tracking-[0.18em]
+              "
+              style={{
+                backgroundColor:
+                  theme.colors
+                    .accentSoft,
+
+                color:
+                  theme.colors
+                    .accent,
+              }}
+            >
+              Professional Resume
+            </div>
+
+
+            <h1
+              className="
+                mt-5
+                max-w-[90%]
+                text-[30px]
+                font-extrabold
+                leading-[0.96]
+                tracking-[-0.045em]
+                sm:text-[36px]
+              "
+              style={{
+                color:
+                  theme.colors
+                    .ink,
+              }}
+            >
+              {getName(resume)}
+            </h1>
+
+
+            {subtitle && (
+              <p
+                className="
+                  mt-4
+                  text-[12px]
+                  font-semibold
+                "
+                style={{
+                  color:
+                    theme.colors
+                      .accent,
+                }}
+              >
+                {subtitle}
+              </p>
+            )}
+
+
+            <ContactLine
+              resume={resume}
+              color={
+                theme.colors
+                  .muted
+              }
+              className="mt-5"
+            />
+
+
+            <div
+              className="
+                mt-7
+                h-px
+                w-full
+              "
+              style={{
+                backgroundColor:
+                  theme.colors
+                    .line,
+              }}
+            />
+          </header>
+
+
+          <div
+            className="
+              mt-8
+              space-y-8
             "
           >
-            {resume.summary.trim() && (
-              <ResumeSection
-                title="Professional Profile"
-
-                resume={resume}
+            {resume.summary && (
+              <CreativeSection
+                title={
+                  theme.labels
+                    .summary
+                }
+                accent={
+                  theme.colors
+                    .accent
+                }
+                ink={
+                  theme.colors
+                    .ink
+                }
+                soft={
+                  theme.colors
+                    .accentSoft
+                }
               >
                 <p
                   className="
-                    whitespace-pre-wrap
-                    text-[13px]
-                    leading-6
+                    text-[10.5px]
+                    leading-[1.65]
                   "
                   style={{
                     color:
-                      theme.colors.muted,
+                      theme.colors
+                        .muted,
                   }}
                 >
-                  {resume.summary.trim()}
+                  {resume.summary}
                 </p>
-              </ResumeSection>
+              </CreativeSection>
             )}
 
 
             {experiences.length >
               0 && (
-              <ResumeSection
-                title="Professional Experience"
-
-                resume={resume}
+              <CreativeSection
+                title={
+                  theme.labels
+                    .experience
+                }
+                accent={
+                  theme.colors
+                    .accent
+                }
+                ink={
+                  theme.colors
+                    .ink
+                }
+                soft={
+                  theme.colors
+                    .accentSoft
+                }
               >
                 <div className="space-y-6">
                   {experiences.map(
-                    (experience) => (
-                      <ExperienceEntry
+                    (
+                      experience
+                    ) => (
+                      <CreativeExperience
                         key={
                           experience.id
                         }
-
                         experience={
                           experience
                         }
-
-                        resume={resume}
+                        ink={
+                          theme
+                            .colors
+                            .ink
+                        }
+                        muted={
+                          theme
+                            .colors
+                            .muted
+                        }
+                        accent={
+                          theme
+                            .colors
+                            .accent
+                        }
+                        soft={
+                          theme
+                            .colors
+                            .accentSoft
+                        }
                       />
                     )
                   )}
                 </div>
-              </ResumeSection>
+              </CreativeSection>
             )}
 
 
             {education.length >
               0 && (
-              <ResumeSection
-                title="Education"
-
-                resume={resume}
+              <CreativeSection
+                title={
+                  theme.labels
+                    .education
+                }
+                accent={
+                  theme.colors
+                    .accent
+                }
+                ink={
+                  theme.colors
+                    .ink
+                }
+                soft={
+                  theme.colors
+                    .accentSoft
+                }
               >
                 <div className="space-y-4">
                   {education.map(
                     (item) => (
-                      <EducationEntry
+                      <EducationRow
                         key={item.id}
-
-                        education={item}
-
-                        resume={resume}
+                        item={item}
+                        ink={
+                          theme
+                            .colors
+                            .ink
+                        }
+                        muted={
+                          theme
+                            .colors
+                            .muted
+                        }
+                        accent={
+                          theme
+                            .colors
+                            .accent
+                        }
                       />
                     )
                   )}
                 </div>
-              </ResumeSection>
+              </CreativeSection>
             )}
 
 
-            {skills.length > 0 && (
-              <ResumeSection
-                title="Core Skills"
-
-                resume={resume}
+            {resume.skills.length >
+              0 && (
+              <CreativeSection
+                title={
+                  theme.labels
+                    .skills
+                }
+                accent={
+                  theme.colors
+                    .accent
+                }
+                ink={
+                  theme.colors
+                    .ink
+                }
+                soft={
+                  theme.colors
+                    .accentSoft
+                }
               >
-                {theme.skillsStyle ===
-                "inline" ? (
-                  <p
-                    className="
-                      text-[13px]
-                      leading-6
-                    "
-                    style={{
-                      color:
-                        theme.colors.muted,
-                    }}
-                  >
-                    {skills.join(" • ")}
-                  </p>
-                ) : (
-                  <div
-                    className="
-                      flex
-                      flex-wrap
-                      gap-2
-                    "
-                  >
-                    {skills.map(
-                      (
-                        skill,
-                        index
-                      ) => (
-                        <span
-                          key={`${skill}-${index}`}
+                <div
+                  className="
+                    flex
+                    flex-wrap
+                    gap-2
+                  "
+                >
+                  {resume.skills.map(
+                    (skill) => (
+                      <span
+                        key={skill}
+                        className="
+                          rounded-md
+                          px-2.5
+                          py-1.5
+                          text-[9px]
+                          font-medium
+                        "
+                        style={{
+                          color:
+                            theme
+                              .colors
+                              .ink,
 
-                          className="
-                            rounded-md
-                            border
-                            px-2.5
-                            py-1
-                            text-[11px]
-                            font-medium
-                          "
-                          style={{
-                            color:
-                              theme.colors
-                                .accent,
-
-                            backgroundColor:
-                              theme.colors
-                                .accentSoft,
-
-                            borderColor:
-                              theme.colors
-                                .line,
-                          }}
-                        >
-                          {skill}
-                        </span>
-                      )
-                    )}
-                  </div>
-                )}
-              </ResumeSection>
+                          backgroundColor:
+                            theme
+                              .colors
+                              .accentSoft,
+                        }}
+                      >
+                        {skill}
+                      </span>
+                    )
+                  )}
+                </div>
+              </CreativeSection>
             )}
           </div>
-        </article>
+        </div>
       </div>
-    </aside>
+    </ResumePaper>
   );
 }
 
 
-interface ResumeHeaderProps {
-  resume: ResumeEditorData;
+/* ======================================= */
+/* SHARED PAPER */
+/* ======================================= */
 
-  headline: string;
+function ResumePaper({
+  children,
+  background,
+  fontFamily,
+}: {
+  children:
+    React.ReactNode;
 
-  contactItems: string[];
-}
+  background:
+    string;
 
-
-function ResumeHeader({
-  resume,
-  headline,
-  contactItems,
-}: ResumeHeaderProps) {
-  const theme =
-    getResumeTemplateTheme(
-      resume.template
-    );
-
-
-  if (
-    theme.headerStyle ===
-    "editorial"
-  ) {
-    return (
-      <header
-        className="
-          px-10
-          pb-6
-          pt-10
-          text-center
-        "
-        style={{
-          backgroundColor:
-            theme.colors.header,
-
-          color:
-            theme.colors.headerText,
-        }}
-      >
-        <h1
-          className="
-            text-[34px]
-            font-bold
-            tracking-[0.03em]
-          "
-        >
-          {resume.personalInfo.name ||
-            "Your Name"}
-        </h1>
-
-
-        {headline && (
-          <p
-            className="
-              mt-2
-              text-xs
-              uppercase
-              tracking-[0.2em]
-            "
-            style={{
-              color:
-                theme.colors.accent,
-            }}
-          >
-            {headline}
-          </p>
-        )}
-
-
-        <div
-          className="
-            mx-auto
-            mt-5
-            h-px
-            w-28
-          "
-          style={{
-            backgroundColor:
-              theme.colors.accent,
-          }}
-        />
-
-
-        {contactItems.length >
-          0 && (
-          <p
-            className="
-              mt-4
-              text-[11px]
-              leading-5
-            "
-            style={{
-              color:
-                theme.colors.muted,
-            }}
-          >
-            {contactItems.join(
-              "  •  "
-            )}
-          </p>
-        )}
-      </header>
-    );
-  }
-
-
-  if (
-    theme.headerStyle ===
-    "accent"
-  ) {
-    return (
-      <header
-        className="
-          px-8
-          py-9
-          sm:px-10
-        "
-        style={{
-          backgroundColor:
-            theme.colors.header,
-
-          color:
-            theme.colors.headerText,
-        }}
-      >
-        <div
-          className="
-            mb-4
-            h-1
-            w-16
-            rounded-full
-          "
-          style={{
-            backgroundColor:
-              theme.colors.accent,
-          }}
-        />
-
-
-        <h1
-          className="
-            text-[34px]
-            font-bold
-            tracking-tight
-          "
-        >
-          {resume.personalInfo.name ||
-            "Your Name"}
-        </h1>
-
-
-        {headline && (
-          <p
-            className="
-              mt-2
-              text-sm
-              font-medium
-            "
-            style={{
-              color:
-                theme.colors.accent,
-            }}
-          >
-            {headline}
-          </p>
-        )}
-
-
-        {contactItems.length >
-          0 && (
-          <p
-            className="
-              mt-5
-              text-[11px]
-              leading-5
-            "
-            style={{
-              color:
-                theme.colors.muted,
-            }}
-          >
-            {contactItems.join(
-              "  •  "
-            )}
-          </p>
-        )}
-      </header>
-    );
-  }
-
-
+  fontFamily:
+    string;
+}) {
   return (
-    <header
+    <div
       className="
-        px-8
-        py-9
-        sm:px-10
+        mx-auto
+        w-full
+        max-w-[794px]
+        overflow-hidden
+        shadow-[0_24px_80px_rgba(0,0,0,0.22)]
       "
       style={{
         backgroundColor:
-          theme.colors.header,
+          background,
 
-        color:
-          theme.colors.headerText,
+        fontFamily,
+
+        minHeight:
+          "1123px",
       }}
     >
+      {children}
+    </div>
+  );
+}
+
+
+/* ======================================= */
+/* SECTION STYLES */
+/* ======================================= */
+
+function ModernSection({
+  title,
+  children,
+  accent,
+  ink,
+}: {
+  title: string;
+
+  children:
+    React.ReactNode;
+
+  accent: string;
+
+  ink: string;
+}) {
+  return (
+    <section>
+      <h2
+        className="
+          text-[10px]
+          font-extrabold
+          uppercase
+          tracking-[0.16em]
+        "
+        style={{
+          color: ink,
+        }}
+      >
+        {title}
+      </h2>
+
+
       <div
         className="
-          mb-5
-          h-1
-          w-12
+          mt-2
+          h-[3px]
+          w-9
           rounded-full
         "
         style={{
           backgroundColor:
-            theme.colors.accent,
+            accent,
         }}
       />
 
 
-      <h1
-        className="
-          text-[34px]
-          font-bold
-          tracking-tight
-        "
-      >
-        {resume.personalInfo.name ||
-          "Your Name"}
-      </h1>
-
-
-      {headline && (
-        <p
-          className="
-            mt-2
-            text-sm
-            font-medium
-          "
-          style={{
-            color: "#bfd4ff",
-          }}
-        >
-          {headline}
-        </p>
-      )}
-
-
-      {contactItems.length > 0 && (
-        <p
-          className="
-            mt-5
-            text-[11px]
-            leading-5
-            text-white/75
-          "
-        >
-          {contactItems.join(
-            "  •  "
-          )}
-        </p>
-      )}
-    </header>
+      <div className="mt-4">
+        {children}
+      </div>
+    </section>
   );
 }
 
 
-interface ResumeSectionProps {
+function ExecutiveSection({
+  title,
+  children,
+  theme,
+}: {
   title: string;
 
-  resume: ResumeEditorData;
+  children:
+    React.ReactNode;
 
-  children: ReactNode;
-}
-
-
-function ResumeSection({
-  title,
-  resume,
-  children,
-}: ResumeSectionProps) {
-  const theme =
-    getResumeTemplateTheme(
-      resume.template
-    );
-
-
-  if (
-    theme.sectionStyle ===
-    "classic"
-  ) {
-    return (
-      <section className="mb-8">
-        <h2
-          className="
-            mb-4
-            border-b
-            pb-2
-            text-[13px]
-            font-bold
-            uppercase
-            tracking-[0.15em]
-          "
-          style={{
-            color:
-              theme.colors.ink,
-
-            borderColor:
-              theme.colors.accent,
-          }}
-        >
-          {title}
-        </h2>
-
-        {children}
-      </section>
-    );
-  }
-
-
-  if (
-    theme.sectionStyle ===
-    "label"
-  ) {
-    return (
-      <section className="mb-8">
-        <div className="mb-4">
-          <h2
-            className="
-              inline-block
-              rounded-md
-              px-3
-              py-1.5
-              text-[11px]
-              font-bold
-              uppercase
-              tracking-[0.14em]
-            "
-            style={{
-              color:
-                theme.colors.accent,
-
-              backgroundColor:
-                theme.colors
-                  .accentSoft,
-            }}
-          >
-            {title}
-          </h2>
-        </div>
-
-        {children}
-      </section>
-    );
-  }
-
-
+  theme:
+    ReturnType<
+      typeof getResumeTemplateTheme
+    >;
+}) {
   return (
-    <section className="mb-8">
+    <section>
       <div
         className="
-          mb-4
           flex
           items-center
-          gap-3
+          gap-4
         "
       >
         <h2
           className="
             shrink-0
-            text-[11px]
-            font-bold
+            text-[10px]
+            font-semibold
             uppercase
-            tracking-[0.15em]
+            tracking-[0.16em]
           "
           style={{
             color:
-              theme.colors.accent,
+              theme.colors
+                .ink,
+
+            fontFamily:
+              theme
+                .browserHeadingFontFamily,
           }}
         >
           {title}
@@ -701,41 +1161,130 @@ function ResumeSection({
           "
           style={{
             backgroundColor:
-              theme.colors.line,
+              theme.colors
+                .line,
           }}
         />
       </div>
 
-      {children}
+
+      <div className="mt-5">
+        {children}
+      </div>
     </section>
   );
 }
 
 
-interface ExperienceEntryProps {
-  experience:
-    ResumeExperience;
+function CreativeSection({
+  title,
+  children,
+  accent,
+  ink,
+  soft,
+}: {
+  title: string;
 
-  resume: ResumeEditorData;
+  children:
+    React.ReactNode;
+
+  accent: string;
+
+  ink: string;
+
+  soft: string;
+}) {
+  return (
+    <section>
+      <div
+        className="
+          flex
+          items-center
+          gap-3
+        "
+      >
+        <div
+          className="
+            flex
+            h-7
+            w-7
+            items-center
+            justify-center
+            rounded-lg
+          "
+          style={{
+            backgroundColor:
+              soft,
+          }}
+        >
+          <div
+            className="
+              h-2
+              w-2
+              rounded-full
+            "
+            style={{
+              backgroundColor:
+                accent,
+            }}
+          />
+        </div>
+
+
+        <h2
+          className="
+            text-[12px]
+            font-extrabold
+            tracking-[-0.02em]
+          "
+          style={{
+            color: ink,
+          }}
+        >
+          {title}
+        </h2>
+
+
+        <div
+          className="
+            h-px
+            flex-1
+          "
+          style={{
+            backgroundColor:
+              soft,
+          }}
+        />
+      </div>
+
+
+      <div className="mt-4">
+        {children}
+      </div>
+    </section>
+  );
 }
 
 
-function ExperienceEntry({
+/* ======================================= */
+/* EXPERIENCE */
+/* ======================================= */
+
+function ModernExperience({
   experience,
-  resume,
-}: ExperienceEntryProps) {
-  const theme =
-    getResumeTemplateTheme(
-      resume.template
-    );
+  ink,
+  muted,
+  accent,
+}: {
+  experience:
+    ResumeExperience;
 
+  ink: string;
 
-  const bullets =
-    parseDescriptionLines(
-      experience.description
-    );
+  muted: string;
 
-
+  accent: string;
+}) {
   return (
     <article>
       <div
@@ -746,13 +1295,15 @@ function ExperienceEntry({
           gap-5
         "
       >
-        <div className="min-w-0">
+        <div>
           <h3
             className="
-              text-[14px]
+              text-[11px]
               font-bold
-              leading-5
             "
+            style={{
+              color: ink,
+            }}
           >
             {experience.position ||
               "Position"}
@@ -762,16 +1313,17 @@ function ExperienceEntry({
           {experience.company && (
             <p
               className="
-                mt-0.5
-                text-[12px]
-                font-medium
+                mt-1
+                text-[9.5px]
+                font-semibold
               "
               style={{
-                color:
-                  theme.colors.accent,
+                color: accent,
               }}
             >
-              {experience.company}
+              {
+                experience.company
+              }
             </p>
           )}
         </div>
@@ -781,12 +1333,11 @@ function ExperienceEntry({
           className="
             shrink-0
             text-right
-            text-[10px]
-            leading-5
+            text-[8.5px]
+            font-medium
           "
           style={{
-            color:
-              theme.colors.muted,
+            color: muted,
           }}
         >
           {formatDateRange(
@@ -797,59 +1348,228 @@ function ExperienceEntry({
       </div>
 
 
-      {bullets.length > 0 && (
-        <ul
-          className="
-            mt-2.5
-            space-y-1.5
-            pl-4
-          "
-          style={{
-            color:
-              theme.colors.muted,
-          }}
-        >
-          {bullets.map(
-            (bullet, index) => (
-              <li
-                key={index}
-
-                className="
-                  list-disc
-                  text-[12px]
-                  leading-5
-                  marker:text-current
-                "
-              >
-                {bullet}
-              </li>
-            )
-          )}
-        </ul>
-      )}
+      <Description
+        text={
+          experience.description
+        }
+        color={muted}
+      />
     </article>
   );
 }
 
 
-interface EducationEntryProps {
-  education:
-    ResumeEducation;
+function ExecutiveExperience({
+  experience,
+  ink,
+  muted,
+  accent,
+}: {
+  experience:
+    ResumeExperience;
 
-  resume: ResumeEditorData;
+  ink: string;
+
+  muted: string;
+
+  accent: string;
+}) {
+  return (
+    <article>
+      {experience.company && (
+        <p
+          className="
+            text-[9px]
+            font-bold
+            uppercase
+            tracking-[0.12em]
+          "
+          style={{
+            color: accent,
+          }}
+        >
+          {experience.company}
+        </p>
+      )}
+
+
+      <div
+        className="
+          mt-1.5
+          flex
+          items-start
+          justify-between
+          gap-5
+        "
+      >
+        <h3
+          className="
+            text-[11px]
+            font-semibold
+          "
+          style={{
+            color: ink,
+          }}
+        >
+          {experience.position ||
+            "Position"}
+        </h3>
+
+
+        <p
+          className="
+            shrink-0
+            text-[8.5px]
+          "
+          style={{
+            color: muted,
+          }}
+        >
+          {formatDateRange(
+            experience.startDate,
+            experience.endDate
+          )}
+        </p>
+      </div>
+
+
+      <Description
+        text={
+          experience.description
+        }
+        color={muted}
+      />
+    </article>
+  );
 }
 
 
-function EducationEntry({
-  education,
-  resume,
-}: EducationEntryProps) {
-  const theme =
-    getResumeTemplateTheme(
-      resume.template
-    );
+function CreativeExperience({
+  experience,
+  ink,
+  muted,
+  accent,
+  soft,
+}: {
+  experience:
+    ResumeExperience;
+
+  ink: string;
+
+  muted: string;
+
+  accent: string;
+
+  soft: string;
+}) {
+  return (
+    <article
+      className="
+        rounded-xl
+        border
+        p-4
+      "
+      style={{
+        borderColor:
+          soft,
+      }}
+    >
+      <div
+        className="
+          flex
+          items-start
+          justify-between
+          gap-5
+        "
+      >
+        <div>
+          <h3
+            className="
+              text-[11px]
+              font-bold
+            "
+            style={{
+              color: ink,
+            }}
+          >
+            {experience.position ||
+              "Position"}
+          </h3>
 
 
+          {experience.company && (
+            <p
+              className="
+                mt-1
+                text-[9.5px]
+                font-semibold
+              "
+              style={{
+                color: accent,
+              }}
+            >
+              {
+                experience.company
+              }
+            </p>
+          )}
+        </div>
+
+
+        <p
+          className="
+            shrink-0
+            rounded-full
+            px-2
+            py-1
+            text-[8px]
+            font-medium
+          "
+          style={{
+            color: accent,
+
+            backgroundColor:
+              soft,
+          }}
+        >
+          {formatDateRange(
+            experience.startDate,
+            experience.endDate
+          )}
+        </p>
+      </div>
+
+
+      <Description
+        text={
+          experience.description
+        }
+        color={muted}
+      />
+    </article>
+  );
+}
+
+
+/* ======================================= */
+/* EDUCATION */
+/* ======================================= */
+
+function EducationRow({
+  item,
+  ink,
+  muted,
+  accent,
+}: {
+  item:
+    ResumeEducation;
+
+  ink: string;
+
+  muted: string;
+
+  accent: string;
+}) {
   return (
     <article
       className="
@@ -862,27 +1582,30 @@ function EducationEntry({
       <div>
         <h3
           className="
-            text-[13px]
+            text-[10.5px]
             font-bold
           "
+          style={{
+            color: ink,
+          }}
         >
-          {education.degree ||
-            "Qualification"}
+          {item.degree ||
+            "Degree"}
         </h3>
 
 
-        {education.school && (
+        {item.school && (
           <p
             className="
-              mt-0.5
-              text-[12px]
+              mt-1
+              text-[9px]
+              font-medium
             "
             style={{
-              color:
-                theme.colors.muted,
+              color: accent,
             }}
           >
-            {education.school}
+            {item.school}
           </p>
         )}
       </div>
@@ -891,18 +1614,15 @@ function EducationEntry({
       <p
         className="
           shrink-0
-          text-right
-          text-[10px]
-          leading-5
+          text-[8.5px]
         "
         style={{
-          color:
-            theme.colors.muted,
+          color: muted,
         }}
       >
         {formatDateRange(
-          education.startDate,
-          education.endDate
+          item.startDate,
+          item.endDate
         )}
       </p>
     </article>
@@ -910,192 +1630,241 @@ function EducationEntry({
 }
 
 
-function hasExperienceContent(
-  experience:
-    ResumeExperience
-) {
-  return Boolean(
-    experience.position.trim() ||
-      experience.company.trim() ||
-      experience.description.trim()
-  );
-}
+/* ======================================= */
+/* DESCRIPTION */
+/* ======================================= */
+
+function Description({
+  text,
+  color,
+}: {
+  text: string;
+
+  color: string;
+}) {
+  const lines =
+    getDescriptionLines(
+      text
+    );
 
 
-function hasEducationContent(
-  education:
-    ResumeEducation
-) {
-  return Boolean(
-    education.degree.trim() ||
-      education.school.trim()
-  );
-}
-
-
-function getProfessionalHeadline(
-  resume: ResumeEditorData
-) {
-  const position =
-    resume.experience.find(
-      (experience) =>
-        experience.position.trim()
-    )?.position;
-
-
-  if (position) {
-    return position.trim();
+  if (lines.length === 0) {
+    return null;
   }
 
 
-  const cleanedTitle =
-    resume.title
-      .replace(
-        /\s*resume\s*$/i,
-        ""
-      )
-      .trim();
+  return (
+    <ul
+      className="
+        mt-3
+        space-y-1.5
+      "
+    >
+      {lines.map(
+        (line, index) => (
+          <li
+            key={`${line}-${index}`}
+            className="
+              flex
+              gap-2
+              text-[9.5px]
+              leading-[1.55]
+            "
+            style={{
+              color,
+            }}
+          >
+            <span
+              className="
+                shrink-0
+              "
+            >
+              •
+            </span>
+
+            <span>
+              {line}
+            </span>
+          </li>
+        )
+      )}
+    </ul>
+  );
+}
+
+
+/* ======================================= */
+/* CONTACT */
+/* ======================================= */
+
+function ContactLine({
+  resume,
+  color,
+  className = "",
+}: {
+  resume:
+    ResumeEditorData;
+
+  color: string;
+
+  className?: string;
+}) {
+  const values = [
+    resume.personalInfo.email,
+    resume.personalInfo.phone,
+    resume.personalInfo.location,
+    resume.personalInfo.linkedin,
+  ].filter(Boolean);
+
+
+  if (values.length === 0) {
+    return null;
+  }
+
+
+  return (
+    <div
+      className={`
+        flex
+        flex-wrap
+        items-center
+        gap-x-2
+        gap-y-1
+        text-[8.5px]
+        leading-5
+        ${className}
+      `}
+      style={{
+        color,
+      }}
+    >
+      {values.map(
+        (value, index) => (
+          <span
+            key={`${value}-${index}`}
+            className="
+              flex
+              items-center
+              gap-2
+            "
+          >
+            {index > 0 && (
+              <span
+                className="
+                  opacity-50
+                "
+              >
+                •
+              </span>
+            )}
+
+            {value}
+          </span>
+        )
+      )}
+    </div>
+  );
+}
+
+
+/* ======================================= */
+/* HELPERS */
+/* ======================================= */
+
+function getName(
+  resume:
+    ResumeEditorData
+) {
+  return (
+    resume.personalInfo
+      .name?.trim() ||
+    "Your Name"
+  );
+}
+
+
+function getProfessionalTitle(
+  resume:
+    ResumeEditorData
+) {
+  const current =
+    sortExperiences(
+      resume.experience
+    )[0];
+
+  return (
+    current?.position
+      ?.trim() || ""
+  );
+}
+
+
+function getDescriptionLines(
+  value: string
+) {
+  return value
+    .split(/\n+/)
+    .map((line) =>
+      line
+        .replace(
+          /^[•\-*]\s*/,
+          ""
+        )
+        .trim()
+    )
+    .filter(Boolean);
+}
+
+
+function formatDateRange(
+  start: string,
+  end: string
+) {
+  const formattedStart =
+    formatDate(start);
+
+  const formattedEnd =
+    end
+      ? formatDate(end)
+      : "Present";
 
 
   if (
-    !cleanedTitle ||
-    cleanedTitle.toLowerCase() ===
-      "untitled"
+    !formattedStart &&
+    !formattedEnd
   ) {
     return "";
   }
 
 
-  return cleanedTitle;
-}
-
-
-function parseDescriptionLines(
-  description: string
-) {
-  const trimmed =
-    description.trim();
-
-
-  if (!trimmed) {
-    return [];
+  if (!formattedStart) {
+    return formattedEnd;
   }
 
 
-  const lines =
-    trimmed
-      .split(/\r?\n/)
-      .map((line) =>
-        line
-          .replace(
-            /^[•\-–—*]\s*/,
-            ""
-          )
-          .trim()
-      )
-      .filter(Boolean);
-
-
-  return lines.length
-    ? lines
-    : [trimmed];
+  return `${formattedStart} – ${formattedEnd}`;
 }
 
 
-function sortNewestFirst<
-  T extends {
-    startDate: string;
-  },
->(
-  items: T[]
-) {
-  return items
-    .map((item, index) => ({
-      item,
-      index,
-    }))
-    .sort((left, right) => {
-      const leftValue =
-        parseSortableDate(
-          left.item.startDate
-        );
-
-
-      const rightValue =
-        parseSortableDate(
-          right.item.startDate
-        );
-
-
-      if (
-        leftValue === rightValue
-      ) {
-        return (
-          left.index -
-          right.index
-        );
-      }
-
-
-      return (
-        rightValue -
-        leftValue
-      );
-    })
-    .map(({ item }) => item);
-}
-
-
-function parseSortableDate(
+function formatDate(
   value: string
 ) {
-  const match =
-    /^(\d{4})-(\d{2})$/.exec(
-      value
-    );
-
-
-  if (!match) {
-    return 0;
+  if (!value) {
+    return "";
   }
 
 
-  return (
-    Number(match[1]) *
-      100 +
-    Number(match[2])
-  );
-}
+  if (
+    value.toLowerCase() ===
+    "present"
+  ) {
+    return "Present";
+  }
 
 
-function formatDateRange(
-  startDate: string,
-  endDate: string
-) {
-  const start =
-    formatMonth(startDate);
-
-
-  const end =
-    endDate
-      ? formatMonth(endDate)
-      : start
-        ? "Present"
-        : "";
-
-
-  return [start, end]
-    .filter(Boolean)
-    .join(" — ");
-}
-
-
-function formatMonth(
-  value: string
-) {
   const match =
-    /^(\d{4})-(\d{2})$/.exec(
-      value
+    value.match(
+      /^(\d{4})-(\d{2})$/
     );
 
 
@@ -1104,29 +1873,100 @@ function formatMonth(
   }
 
 
-  const monthNames = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-
+  const year =
+    Number(match[1]);
 
   const month =
-    monthNames[
-      Number(match[2]) - 1
-    ];
+    Number(match[2]);
 
 
-  return month
-    ? `${month} ${match[1]}`
-    : value;
+  const date =
+    new Date(
+      Date.UTC(
+        year,
+        month - 1,
+        1
+      )
+    );
+
+
+  return new Intl
+    .DateTimeFormat(
+      "en",
+      {
+        month:
+          "short",
+
+        year:
+          "numeric",
+
+        timeZone:
+          "UTC",
+      }
+    )
+    .format(date);
+}
+
+
+function sortExperiences(
+  items:
+    ResumeExperience[]
+) {
+  return [
+    ...items,
+  ].sort(
+    (
+      a,
+      b
+    ) =>
+      dateValue(
+        b.startDate
+      ) -
+      dateValue(
+        a.startDate
+      )
+  );
+}
+
+
+function sortEducation(
+  items:
+    ResumeEducation[]
+) {
+  return [
+    ...items,
+  ].sort(
+    (
+      a,
+      b
+    ) =>
+      dateValue(
+        b.startDate
+      ) -
+      dateValue(
+        a.startDate
+      )
+  );
+}
+
+
+function dateValue(
+  value: string
+) {
+  if (!value) {
+    return 0;
+  }
+
+
+  const timestamp =
+    Date.parse(
+      `${value}-01`
+    );
+
+
+  return Number.isNaN(
+    timestamp
+  )
+    ? 0
+    : timestamp;
 }

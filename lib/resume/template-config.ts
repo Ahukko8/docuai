@@ -4,20 +4,21 @@ import type {
 
 
 export type ResumeHeaderStyle =
-  | "solid"
+  | "dark"
   | "editorial"
-  | "accent";
+  | "accent-rail";
 
 
 export type ResumeSectionStyle =
-  | "line"
-  | "classic"
-  | "label";
+  | "accent-underline"
+  | "editorial-rule"
+  | "creative";
 
 
 export type ResumeSkillsStyle =
-  | "pills"
-  | "inline";
+  | "inline"
+  | "editorial"
+  | "soft-blocks";
 
 
 export interface ResumeTemplateTheme {
@@ -26,6 +27,8 @@ export interface ResumeTemplateTheme {
   description: string;
 
   recommendedFor: string;
+
+  badge: string;
 
   headerStyle:
     ResumeHeaderStyle;
@@ -36,25 +39,27 @@ export interface ResumeTemplateTheme {
   skillsStyle:
     ResumeSkillsStyle;
 
+  labels: {
+    summary: string;
+    experience: string;
+    education: string;
+    skills: string;
+  };
+
   colors: {
     paper: string;
-
     ink: string;
-
     muted: string;
-
     accent: string;
-
     accentSoft: string;
-
     line: string;
-
     header: string;
-
     headerText: string;
   };
 
   browserFontFamily: string;
+
+  browserHeadingFontFamily: string;
 
   pdfBodyFont: string;
 
@@ -74,54 +79,74 @@ export const RESUME_TEMPLATE_THEMES:
       "Modern",
 
     description:
-      "Clean, technical and highly readable.",
+      "Bold, clean and versatile with a polished contemporary feel.",
 
     recommendedFor:
-      "Technology, consulting, operations and general professional roles.",
+      "Technology, graduates and general professionals",
+
+    badge:
+      "Popular",
 
     headerStyle:
-      "solid",
+      "dark",
 
     sectionStyle:
-      "line",
+      "accent-underline",
 
     skillsStyle:
-      "pills",
+      "inline",
+
+    labels: {
+      summary:
+        "Profile",
+
+      experience:
+        "Experience",
+
+      education:
+        "Education",
+
+      skills:
+        "Skills",
+    },
 
     colors: {
       paper:
-        "#ffffff",
+        "#FFFFFF",
 
       ink:
-        "#172033",
+        "#18181B",
 
       muted:
-        "#5f6b7a",
+        "#64748B",
 
       accent:
-        "#2563eb",
+        "#6366F1",
 
       accentSoft:
-        "#eff6ff",
+        "#EEF2FF",
 
       line:
-        "#dbe3ef",
+        "#E5E7EB",
 
       header:
-        "#101827",
+        "#111827",
 
       headerText:
-        "#ffffff",
+        "#FFFFFF",
     },
 
     browserFontFamily:
-      "Arial, Helvetica, sans-serif",
+      'Inter, Arial, Helvetica, sans-serif',
+
+    browserHeadingFontFamily:
+      'Inter, Arial, Helvetica, sans-serif',
 
     pdfBodyFont:
       "Helvetica",
 
     pdfHeadingFont:
-      "Helvetica-Bold",
+      "Helvetica",
 
     leftAccentWidth:
       0,
@@ -133,54 +158,74 @@ export const RESUME_TEMPLATE_THEMES:
       "Executive",
 
     description:
-      "Elegant and authoritative with restrained styling.",
+      "Refined editorial styling designed for leadership and senior roles.",
 
     recommendedFor:
-      "Leadership, finance, management, law and senior professional roles.",
+      "Leadership, finance, consulting and management",
+
+    badge:
+      "Pro",
 
     headerStyle:
       "editorial",
 
     sectionStyle:
-      "classic",
+      "editorial-rule",
 
     skillsStyle:
-      "inline",
+      "editorial",
+
+    labels: {
+      summary:
+        "Executive Profile",
+
+      experience:
+        "Professional Experience",
+
+      education:
+        "Education",
+
+      skills:
+        "Core Expertise",
+    },
 
     colors: {
       paper:
-        "#fffefb",
+        "#FFFEFC",
 
       ink:
-        "#211f1c",
+        "#1C1917",
 
       muted:
-        "#6f6960",
+        "#78716C",
 
       accent:
-        "#9a6635",
+        "#9A6A38",
 
       accentSoft:
-        "#f8f2ea",
+        "#FAF6F1",
 
       line:
-        "#cfc6b9",
+        "#D6D3D1",
 
       header:
-        "#fffefb",
+        "#FFFEFC",
 
       headerText:
-        "#211f1c",
+        "#1C1917",
     },
 
     browserFontFamily:
-      "Georgia, 'Times New Roman', serif",
+      'Arial, Helvetica, sans-serif',
+
+    browserHeadingFontFamily:
+      'Georgia, "Times New Roman", serif',
 
     pdfBodyFont:
-      "Times-Roman",
+      "Helvetica",
 
     pdfHeadingFont:
-      "Times-Bold",
+      "Times-Roman",
 
     leftAccentWidth:
       0,
@@ -192,48 +237,68 @@ export const RESUME_TEMPLATE_THEMES:
       "Creative",
 
     description:
-      "Distinctive and contemporary while remaining ATS-conscious.",
+      "Distinctive, energetic and expressive while remaining professional.",
 
     recommendedFor:
-      "Marketing, product, design, media and creative technology roles.",
+      "Design, marketing, media and product roles",
+
+    badge:
+      "Pro",
 
     headerStyle:
-      "accent",
+      "accent-rail",
 
     sectionStyle:
-      "label",
+      "creative",
 
     skillsStyle:
-      "pills",
+      "soft-blocks",
+
+    labels: {
+      summary:
+        "About",
+
+      experience:
+        "Experience",
+
+      education:
+        "Education",
+
+      skills:
+        "Skills",
+    },
 
     colors: {
       paper:
-        "#ffffff",
+        "#FFFFFF",
 
       ink:
-        "#252236",
+        "#18181B",
 
       muted:
-        "#6f6980",
+        "#71717A",
 
       accent:
-        "#7c3aed",
+        "#7C3AED",
 
       accentSoft:
-        "#f3efff",
+        "#F5F3FF",
 
       line:
-        "#ded7ef",
+        "#E4E4E7",
 
       header:
-        "#f7f4ff",
+        "#FFFFFF",
 
       headerText:
-        "#2f2254",
+        "#18181B",
     },
 
     browserFontFamily:
-      "Arial, Helvetica, sans-serif",
+      'Inter, Arial, Helvetica, sans-serif',
+
+    browserHeadingFontFamily:
+      'Inter, Arial, Helvetica, sans-serif',
 
     pdfBodyFont:
       "Helvetica",
@@ -242,18 +307,34 @@ export const RESUME_TEMPLATE_THEMES:
       "Helvetica-Bold",
 
     leftAccentWidth:
-      10,
+      14,
   },
 };
 
 
+/*
+ * Compatibility aliases.
+ *
+ * These make the new config easier to use
+ * with code from previous milestones.
+ */
+
+export const resumeTemplateThemes =
+  RESUME_TEMPLATE_THEMES;
+
+
+export const RESUME_TEMPLATES =
+  RESUME_TEMPLATE_THEMES;
+
+
 export function getResumeTemplateTheme(
   template: ResumeTemplate
-): ResumeTemplateTheme {
+) {
   return (
     RESUME_TEMPLATE_THEMES[
       template
     ] ??
-    RESUME_TEMPLATE_THEMES.modern
+    RESUME_TEMPLATE_THEMES
+      .modern
   );
 }

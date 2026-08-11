@@ -1267,9 +1267,30 @@ export default function ResumeEditor({
 
       {/* LIVE PREVIEW */}
 
-      <ResumeTemplatePreview
-        resume={resume}
-      />
+      <div
+        className="
+    overflow-auto
+    rounded-2xl
+    border
+    border-white/10
+    bg-zinc-900/70
+    p-3
+    sm:p-6
+    lg:p-8
+  "
+      >
+        <div
+          className="
+      mx-auto
+      min-w-0
+      max-w-[794px]
+    "
+        >
+          <ResumeTemplatePreview
+            resume={resume}
+          />
+        </div>
+      </div>
 
     </div>
   );

@@ -1,5 +1,3 @@
-import "server-only";
-
 import {
   Document,
   Page,
@@ -10,781 +8,1866 @@ import {
 
 import type {
   ResumeEditorData,
-  ResumeTemplate,
+  ResumeEducation,
+  ResumeExperience,
 } from "@/types/resume";
+
+import {
+  getResumeTemplateTheme,
+} from "@/lib/resume/template-config";
 
 
 interface ResumePdfDocumentProps {
-  resume: ResumeEditorData;
+  resume:
+    ResumeEditorData;
 }
 
 
-interface PdfTheme {
-  accent: string;
-
-  background: string;
-
-  bodyText: string;
-
-  mutedText: string;
-
-  lineColor: string;
-
-  headerBackground: string;
-
-  headerText: string;
-
-  bodyFont: string;
-
-  headingFont: string;
-
-  pageLeftBorderWidth: number;
-
-  pageLeftBorderColor: string;
-
-  useSkillPills: boolean;
-}
-
-
-const themes: Record<
-  ResumeTemplate,
-  PdfTheme
-> = {
-  modern: {
-    accent: "#7c3aed",
-
-    background: "#ffffff",
-
-    bodyText: "#27272a",
-
-    mutedText: "#71717a",
-
-    lineColor: "#d4d4d8",
-
-    headerBackground: "#18181b",
-
-    headerText: "#ffffff",
-
-    bodyFont: "Helvetica",
-
-    headingFont: "Helvetica",
-
-    pageLeftBorderWidth: 0,
-
-    pageLeftBorderColor:
-      "transparent",
-
-    useSkillPills: true,
-  },
-
-  executive: {
-    accent: "#92400e",
-
-    background: "#fffdf8",
-
-    bodyText: "#292524",
-
-    mutedText: "#78716c",
-
-    lineColor: "#d6d3d1",
-
-    headerBackground:
-      "#fffdf8",
-
-    headerText: "#1c1917",
-
-    bodyFont: "Times-Roman",
-
-    headingFont: "Times-Roman",
-
-    pageLeftBorderWidth: 0,
-
-    pageLeftBorderColor:
-      "transparent",
-
-    useSkillPills: false,
-  },
-
-  creative: {
-    accent: "#db2777",
-
-    background: "#fffafd",
-
-    bodyText: "#27272a",
-
-    mutedText: "#71717a",
-
-    lineColor: "#f0abcf",
-
-    headerBackground:
-      "#fdf2f8",
-
-    headerText: "#831843",
-
-    bodyFont: "Helvetica",
-
-    headingFont: "Helvetica",
-
-    pageLeftBorderWidth: 12,
-
-    pageLeftBorderColor:
-      "#db2777",
-
-    useSkillPills: true,
-  },
-};
-
-
-export default function ResumePdfDocument({
-  resume,
-}: ResumePdfDocumentProps) {
-  const theme =
-    themes[resume.template] ??
-    themes.modern;
-
-
-  const styles =
-    createPdfStyles(theme);
-
-
-  const contactItems = [
-    resume.personalInfo.email,
-
-    resume.personalInfo.phone,
-
-    resume.personalInfo.location,
-
-    resume.personalInfo.linkedin,
-  ].filter(
-    (item): item is string =>
-      Boolean(item?.trim())
-  );
-
-
-  const experiences =
-    resume.experience.filter(
-      (experience) =>
-        Boolean(
-          experience.company.trim() ||
-            experience.position.trim() ||
-            experience.description.trim()
-        )
-    );
-
-
-  const education =
-    resume.education.filter(
-      (item) =>
-        Boolean(
-          item.school.trim() ||
-            item.degree.trim()
-        )
-    );
-
-
-  const skills =
-    resume.skills
-      .map((skill) => skill.trim())
-      .filter(Boolean);
-
-
-  return (
-    <Document
-      title={
-        resume.title ||
-        "Professional Resume"
-      }
-
-      author={
-        resume.personalInfo.name ||
-        "Resume User"
-      }
-
-      subject="Professional resume"
-
-      keywords="resume, curriculum vitae, career"
-    >
-      <Page
-        size="A4"
-
-        wrap
-
-        style={styles.page}
-      >
-        <View style={styles.header}>
-          <Text style={styles.name}>
-            {resume.personalInfo.name ||
-              "Your Name"}
-          </Text>
-
-
-          {contactItems.length >
-            0 && (
-            <Text
-              style={
-                styles.contactLine
-              }
-            >
-              {contactItems.join(
-                "  |  "
-              )}
-            </Text>
-          )}
-        </View>
-
-
-        {resume.summary.trim() && (
-          <PdfSection
-            title="Professional Profile"
-            styles={styles}
-          >
-            <Text
-              style={
-                styles.bodyParagraph
-              }
-            >
-              {resume.summary.trim()}
-            </Text>
-          </PdfSection>
-        )}
-
-
-        {experiences.length > 0 && (
-          <PdfSection
-            title="Professional Experience"
-            styles={styles}
-          >
-            {experiences.map(
-              (experience) => (
-                <View
-                  key={experience.id}
-
-                  wrap={false}
-
-                  style={
-                    styles.entry
-                  }
-                >
-                  <View
-                    style={
-                      styles.entryHeader
-                    }
-                  >
-                    <View
-                      style={
-                        styles.entryTitleGroup
-                      }
-                    >
-                      <Text
-                        style={
-                          styles.entryTitle
-                        }
-                      >
-                        {experience.position ||
-                          "Position"}
-                      </Text>
-
-
-                      {experience.company && (
-                        <Text
-                          style={
-                            styles.entrySubtitle
-                          }
-                        >
-                          {
-                            experience.company
-                          }
-                        </Text>
-                      )}
-                    </View>
-
-
-                    <Text
-                      style={
-                        styles.entryDate
-                      }
-                    >
-                      {formatDateRange(
-                        experience.startDate,
-                        experience.endDate
-                      )}
-                    </Text>
-                  </View>
-
-
-                  {getDescriptionLines(
-                    experience.description
-                  ).map(
-                    (
-                      description,
-                      index
-                    ) => (
-                      <View
-                        key={`${experience.id}-${index}`}
-
-                        style={
-                          styles.bulletRow
-                        }
-                      >
-                        <Text
-                          style={
-                            styles.bullet
-                          }
-                        >
-                          •
-                        </Text>
-
-                        <Text
-                          style={
-                            styles.bulletText
-                          }
-                        >
-                          {description}
-                        </Text>
-                      </View>
-                    )
-                  )}
-                </View>
-              )
-            )}
-          </PdfSection>
-        )}
-
-
-        {education.length > 0 && (
-          <PdfSection
-            title="Education"
-            styles={styles}
-          >
-            {education.map(
-              (item) => (
-                <View
-                  key={item.id}
-
-                  wrap={false}
-
-                  style={
-                    styles.entry
-                  }
-                >
-                  <View
-                    style={
-                      styles.entryHeader
-                    }
-                  >
-                    <View
-                      style={
-                        styles.entryTitleGroup
-                      }
-                    >
-                      <Text
-                        style={
-                          styles.entryTitle
-                        }
-                      >
-                        {item.degree ||
-                          "Qualification"}
-                      </Text>
-
-
-                      {item.school && (
-                        <Text
-                          style={
-                            styles.entrySubtitle
-                          }
-                        >
-                          {item.school}
-                        </Text>
-                      )}
-                    </View>
-
-
-                    <Text
-                      style={
-                        styles.entryDate
-                      }
-                    >
-                      {formatDateRange(
-                        item.startDate,
-                        item.endDate
-                      )}
-                    </Text>
-                  </View>
-                </View>
-              )
-            )}
-          </PdfSection>
-        )}
-
-
-        {skills.length > 0 && (
-          <PdfSection
-            title="Skills"
-            styles={styles}
-          >
-            {theme.useSkillPills ? (
-              <View
-                style={
-                  styles.skillsContainer
-                }
-              >
-                {skills.map(
-                  (
-                    skill,
-                    index
-                  ) => (
-                    <Text
-                      key={`${skill}-${index}`}
-
-                      style={
-                        styles.skillPill
-                      }
-                    >
-                      {skill}
-                    </Text>
-                  )
-                )}
-              </View>
-            ) : (
-              <Text
-                style={
-                  styles.bodyParagraph
-                }
-              >
-                {skills.join("  •  ")}
-              </Text>
-            )}
-          </PdfSection>
-        )}
-      </Page>
-    </Document>
-  );
-}
-
-
-interface PdfSectionProps {
-  title: string;
-
-  children:
-    React.ReactNode;
-
-  styles:
-    ReturnType<
-      typeof createPdfStyles
-    >;
-}
-
-
-function PdfSection({
-  title,
-  children,
-  styles,
-}: PdfSectionProps) {
-  return (
-    <View style={styles.section}>
-      <Text
-        style={
-          styles.sectionTitle
-        }
-      >
-        {title}
-      </Text>
-
-      {children}
-    </View>
-  );
-}
-
-
-function createPdfStyles(
-  theme: PdfTheme
-) {
-  return StyleSheet.create({
+const styles =
+  StyleSheet.create({
     page: {
       backgroundColor:
-        theme.background,
-
-      color:
-        theme.bodyText,
-
-      fontFamily:
-        theme.bodyFont,
-
-      fontSize: 10,
-
-      lineHeight: 1.45,
-
-      paddingTop: 34,
-
-      paddingRight: 38,
-
-      paddingBottom: 38,
-
-      paddingLeft:
-        theme.pageLeftBorderWidth >
-        0
-          ? 42
-          : 38,
-
-      borderLeftWidth:
-        theme.pageLeftBorderWidth,
-
-      borderLeftColor:
-        theme.pageLeftBorderColor,
+        "#FFFFFF",
     },
-
-
-    header: {
-      backgroundColor:
-        theme.headerBackground,
-
-      color:
-        theme.headerText,
-
-      paddingTop: 20,
-
-      paddingRight: 22,
-
-      paddingBottom: 20,
-
-      paddingLeft: 22,
-
-      marginBottom: 22,
-
-      borderBottomWidth:
-        theme.headerBackground ===
-        theme.background
-          ? 2
-          : 0,
-
-      borderBottomColor:
-        theme.accent,
-    },
-
-
-    name: {
-      fontFamily:
-        theme.headingFont,
-
-      fontSize: 25,
-
-      fontWeight: "bold",
-
-      letterSpacing: 0.3,
-
-      marginBottom: 7,
-    },
-
-
-    contactLine: {
-      fontSize: 8.5,
-
-      color:
-        theme.headerBackground ===
-        theme.background
-          ? theme.mutedText
-          : theme.headerText,
-
-      lineHeight: 1.4,
-    },
-
 
     section: {
-      marginBottom: 19,
+      marginBottom: 18,
     },
 
-
-    sectionTitle: {
-      fontFamily:
-        theme.headingFont,
-
-      color:
-        theme.accent,
-
-      fontSize: 10.5,
-
-      fontWeight: "bold",
-
-      textTransform:
-        "uppercase",
-
-      letterSpacing: 1.1,
-
-      borderBottomWidth: 1,
-
-      borderBottomColor:
-        theme.lineColor,
-
-      paddingBottom: 5,
-
-      marginBottom: 10,
-    },
-
-
-    bodyParagraph: {
-      color:
-        theme.bodyText,
-
-      fontSize: 9.5,
-
-      lineHeight: 1.55,
-    },
-
-
-    entry: {
-      marginBottom: 13,
-    },
-
-
-    entryHeader: {
-      flexDirection: "row",
+    row: {
+      flexDirection:
+        "row",
 
       justifyContent:
         "space-between",
 
       alignItems:
         "flex-start",
-
-      marginBottom: 5,
     },
 
+    contactRow: {
+      flexDirection:
+        "row",
 
-    entryTitleGroup: {
-      flexGrow: 1,
+      flexWrap:
+        "wrap",
 
-      flexShrink: 1,
-
-      paddingRight: 12,
+      alignItems:
+        "center",
     },
-
-
-    entryTitle: {
-      fontFamily:
-        theme.headingFont,
-
-      fontSize: 10,
-
-      fontWeight: "bold",
-
-      color:
-        theme.bodyText,
-    },
-
-
-    entrySubtitle: {
-      fontSize: 9,
-
-      color:
-        theme.mutedText,
-
-      marginTop: 2,
-    },
-
-
-    entryDate: {
-      fontSize: 8,
-
-      color:
-        theme.mutedText,
-
-      textAlign: "right",
-
-      maxWidth: 120,
-    },
-
 
     bulletRow: {
-      flexDirection: "row",
-
-      alignItems: "flex-start",
+      flexDirection:
+        "row",
 
       marginBottom: 3,
-
-      paddingRight: 5,
     },
-
 
     bullet: {
-      width: 12,
-
-      color:
-        theme.accent,
-
-      fontSize: 9,
+      width: 10,
     },
 
-
-    bulletText: {
+    flex: {
       flexGrow: 1,
-
       flexShrink: 1,
-
-      color:
-        theme.bodyText,
-
-      fontSize: 9,
-
-      lineHeight: 1.5,
-    },
-
-
-    skillsContainer: {
-      flexDirection: "row",
-
-      flexWrap: "wrap",
-    },
-
-
-    skillPill: {
-      backgroundColor:
-        `${theme.accent}15`,
-
-      color:
-        theme.accent,
-
-      borderWidth: 1,
-
-      borderColor:
-        `${theme.accent}40`,
-
-      borderRadius: 4,
-
-      fontSize: 8,
-
-      paddingTop: 4,
-
-      paddingRight: 7,
-
-      paddingBottom: 4,
-
-      paddingLeft: 7,
-
-      marginRight: 5,
-
-      marginBottom: 5,
     },
   });
+
+
+export default function ResumePdfDocument({
+  resume,
+}: ResumePdfDocumentProps) {
+  switch (resume.template) {
+    case "executive":
+      return (
+        <ExecutivePdf
+          resume={resume}
+        />
+      );
+
+    case "creative":
+      return (
+        <CreativePdf
+          resume={resume}
+        />
+      );
+
+    default:
+      return (
+        <ModernPdf
+          resume={resume}
+        />
+      );
+  }
+}
+
+
+export {
+  ResumePdfDocument,
+};
+
+
+/* ======================================= */
+/* MODERN PDF */
+/* ======================================= */
+
+function ModernPdf({
+  resume,
+}: ResumePdfDocumentProps) {
+  const theme =
+    getResumeTemplateTheme(
+      "modern"
+    );
+
+  const experiences =
+    sortExperiences(
+      resume.experience
+    );
+
+  const education =
+    sortEducation(
+      resume.education
+    );
+
+  const subtitle =
+    getProfessionalTitle(
+      resume
+    );
+
+
+  return (
+    <Document
+      title={resume.title}
+      author="DocuAI"
+      subject="Professional Resume"
+    >
+      <Page
+        size="A4"
+        wrap
+        style={{
+          ...styles.page,
+
+          fontFamily:
+            theme.pdfBodyFont,
+
+          color:
+            theme.colors.ink,
+
+          fontSize: 9.5,
+        }}
+      >
+        <View
+          style={{
+            backgroundColor:
+              theme.colors
+                .header,
+
+            paddingTop: 29,
+
+            paddingBottom: 27,
+
+            paddingHorizontal: 34,
+          }}
+        >
+          <View
+            style={{
+              width: 34,
+              height: 3,
+              borderRadius: 2,
+
+              backgroundColor:
+                theme.colors
+                  .accent,
+
+              marginBottom: 15,
+            }}
+          />
+
+
+          <Text
+            style={{
+              color:
+                theme.colors
+                  .headerText,
+
+              fontFamily:
+                "Helvetica-Bold",
+
+              fontSize: 25,
+
+              lineHeight: 1,
+
+              letterSpacing:
+                -0.5,
+            }}
+          >
+            {getName(resume)}
+          </Text>
+
+
+          {subtitle && (
+            <Text
+              style={{
+                marginTop: 8,
+
+                color:
+                  "#C7D2FE",
+
+                fontFamily:
+                  "Helvetica-Bold",
+
+                fontSize: 10,
+              }}
+            >
+              {subtitle}
+            </Text>
+          )}
+
+
+          <PdfContactLine
+            resume={resume}
+            color="#CBD5E1"
+            marginTop={11}
+          />
+        </View>
+
+
+        <View
+          style={{
+            paddingTop: 27,
+
+            paddingBottom: 30,
+
+            paddingHorizontal: 34,
+          }}
+        >
+          {resume.summary && (
+            <ModernPdfSection
+              title={
+                theme.labels
+                  .summary
+              }
+              theme={theme}
+            >
+              <Text
+                style={{
+                  color:
+                    theme.colors
+                      .muted,
+
+                  fontSize: 9.5,
+
+                  lineHeight: 1.5,
+                }}
+              >
+                {resume.summary}
+              </Text>
+            </ModernPdfSection>
+          )}
+
+
+          {experiences.length >
+            0 && (
+            <ModernPdfSection
+              title={
+                theme.labels
+                  .experience
+              }
+              theme={theme}
+            >
+              {experiences.map(
+                (
+                  experience,
+                  index
+                ) => (
+                  <View
+                    key={
+                      experience.id
+                    }
+                    style={{
+                      marginBottom:
+                        index ===
+                        experiences.length -
+                          1
+                          ? 0
+                          : 15,
+                    }}
+                  >
+                    <View
+                      style={
+                        styles.row
+                      }
+                    >
+                      <View
+                        style={
+                          styles.flex
+                        }
+                      >
+                        <Text
+                          style={{
+                            fontFamily:
+                              "Helvetica-Bold",
+
+                            fontSize:
+                              10.5,
+
+                            color:
+                              theme
+                                .colors
+                                .ink,
+                          }}
+                        >
+                          {experience.position ||
+                            "Position"}
+                        </Text>
+
+
+                        {experience.company && (
+                          <Text
+                            style={{
+                              marginTop:
+                                3,
+
+                              fontFamily:
+                                "Helvetica-Bold",
+
+                              fontSize:
+                                8.5,
+
+                              color:
+                                theme
+                                  .colors
+                                  .accent,
+                            }}
+                          >
+                            {
+                              experience.company
+                            }
+                          </Text>
+                        )}
+                      </View>
+
+
+                      <Text
+                        style={{
+                          marginLeft:
+                            14,
+
+                          fontSize:
+                            8,
+
+                          color:
+                            theme
+                              .colors
+                              .muted,
+                        }}
+                      >
+                        {formatDateRange(
+                          experience.startDate,
+                          experience.endDate
+                        )}
+                      </Text>
+                    </View>
+
+
+                    <PdfDescription
+                      text={
+                        experience.description
+                      }
+                      color={
+                        theme.colors
+                          .muted
+                      }
+                    />
+                  </View>
+                )
+              )}
+            </ModernPdfSection>
+          )}
+
+
+          {education.length > 0 && (
+            <ModernPdfSection
+              title={
+                theme.labels
+                  .education
+              }
+              theme={theme}
+            >
+              {education.map(
+                (
+                  item,
+                  index
+                ) => (
+                  <PdfEducation
+                    key={item.id}
+                    item={item}
+                    theme={theme}
+                    marginBottom={
+                      index ===
+                      education.length -
+                        1
+                        ? 0
+                        : 10
+                    }
+                  />
+                )
+              )}
+            </ModernPdfSection>
+          )}
+
+
+          {resume.skills.length >
+            0 && (
+            <ModernPdfSection
+              title={
+                theme.labels
+                  .skills
+              }
+              theme={theme}
+              last
+            >
+              <Text
+                style={{
+                  fontFamily:
+                    "Helvetica-Bold",
+
+                  color:
+                    theme.colors
+                      .muted,
+
+                  fontSize:
+                    8.8,
+
+                  lineHeight:
+                    1.6,
+                }}
+              >
+                {resume.skills.join(
+                  "  •  "
+                )}
+              </Text>
+            </ModernPdfSection>
+          )}
+        </View>
+      </Page>
+    </Document>
+  );
+}
+
+
+/* ======================================= */
+/* EXECUTIVE PDF */
+/* ======================================= */
+
+function ExecutivePdf({
+  resume,
+}: ResumePdfDocumentProps) {
+  const theme =
+    getResumeTemplateTheme(
+      "executive"
+    );
+
+  const experiences =
+    sortExperiences(
+      resume.experience
+    );
+
+  const education =
+    sortEducation(
+      resume.education
+    );
+
+  const subtitle =
+    getProfessionalTitle(
+      resume
+    );
+
+
+  return (
+    <Document
+      title={resume.title}
+      author="DocuAI"
+      subject="Professional Resume"
+    >
+      <Page
+        size="A4"
+        wrap
+        style={{
+          ...styles.page,
+
+          backgroundColor:
+            theme.colors
+              .paper,
+
+          fontFamily:
+            theme.pdfBodyFont,
+
+          color:
+            theme.colors
+              .ink,
+
+          fontSize: 9.5,
+
+          paddingTop: 35,
+
+          paddingBottom: 35,
+
+          paddingHorizontal: 39,
+        }}
+      >
+        <View
+          style={{
+            borderTopWidth: 1,
+
+            borderTopColor:
+              theme.colors
+                .accent,
+
+            paddingTop: 20,
+
+            paddingBottom: 20,
+
+            borderBottomWidth:
+              1,
+
+            borderBottomColor:
+              theme.colors
+                .line,
+
+            alignItems:
+              "center",
+          }}
+        >
+          <Text
+            style={{
+              fontFamily:
+                theme
+                  .pdfHeadingFont,
+
+              fontSize: 27,
+
+              color:
+                theme.colors
+                  .ink,
+
+              letterSpacing:
+                0.5,
+            }}
+          >
+            {getName(resume)}
+          </Text>
+
+
+          {subtitle && (
+            <Text
+              style={{
+                marginTop: 9,
+
+                fontFamily:
+                  "Helvetica-Bold",
+
+                fontSize: 8.5,
+
+                textTransform:
+                  "uppercase",
+
+                letterSpacing:
+                  1.8,
+
+                color:
+                  theme.colors
+                    .accent,
+              }}
+            >
+              {subtitle}
+            </Text>
+          )}
+
+
+          <PdfContactLine
+            resume={resume}
+            color={
+              theme.colors
+                .muted
+            }
+            marginTop={10}
+            centered
+          />
+        </View>
+
+
+        <View
+          style={{
+            paddingTop: 25,
+          }}
+        >
+          {resume.summary && (
+            <ExecutivePdfSection
+              title={
+                theme.labels
+                  .summary
+              }
+              theme={theme}
+            >
+              <Text
+                style={{
+                  fontSize:
+                    9.5,
+
+                  color:
+                    theme.colors
+                      .muted,
+
+                  lineHeight:
+                    1.55,
+                }}
+              >
+                {resume.summary}
+              </Text>
+            </ExecutivePdfSection>
+          )}
+
+
+          {experiences.length >
+            0 && (
+            <ExecutivePdfSection
+              title={
+                theme.labels
+                  .experience
+              }
+              theme={theme}
+            >
+              {experiences.map(
+                (
+                  experience,
+                  index
+                ) => (
+                  <View
+                    key={
+                      experience.id
+                    }
+                    style={{
+                      marginBottom:
+                        index ===
+                        experiences.length -
+                          1
+                          ? 0
+                          : 17,
+                    }}
+                  >
+                    {experience.company && (
+                      <Text
+                        style={{
+                          color:
+                            theme
+                              .colors
+                              .accent,
+
+                          fontFamily:
+                            "Helvetica-Bold",
+
+                          fontSize:
+                            8.2,
+
+                          letterSpacing:
+                            1,
+
+                          textTransform:
+                            "uppercase",
+                        }}
+                      >
+                        {
+                          experience.company
+                        }
+                      </Text>
+                    )}
+
+
+                    <View
+                      style={{
+                        ...styles.row,
+
+                        marginTop: 4,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          flexGrow: 1,
+
+                          flexShrink: 1,
+
+                          fontFamily:
+                            "Helvetica-Bold",
+
+                          fontSize:
+                            10.2,
+
+                          color:
+                            theme
+                              .colors
+                              .ink,
+                        }}
+                      >
+                        {experience.position ||
+                          "Position"}
+                      </Text>
+
+
+                      <Text
+                        style={{
+                          marginLeft:
+                            15,
+
+                          fontSize: 8,
+
+                          color:
+                            theme
+                              .colors
+                              .muted,
+                        }}
+                      >
+                        {formatDateRange(
+                          experience.startDate,
+                          experience.endDate
+                        )}
+                      </Text>
+                    </View>
+
+
+                    <PdfDescription
+                      text={
+                        experience.description
+                      }
+                      color={
+                        theme.colors
+                          .muted
+                      }
+                    />
+                  </View>
+                )
+              )}
+            </ExecutivePdfSection>
+          )}
+
+
+          {education.length > 0 && (
+            <ExecutivePdfSection
+              title={
+                theme.labels
+                  .education
+              }
+              theme={theme}
+            >
+              {education.map(
+                (
+                  item,
+                  index
+                ) => (
+                  <PdfEducation
+                    key={item.id}
+                    item={item}
+                    theme={theme}
+                    marginBottom={
+                      index ===
+                      education.length -
+                        1
+                        ? 0
+                        : 11
+                    }
+                  />
+                )
+              )}
+            </ExecutivePdfSection>
+          )}
+
+
+          {resume.skills.length >
+            0 && (
+            <ExecutivePdfSection
+              title={
+                theme.labels
+                  .skills
+              }
+              theme={theme}
+              last
+            >
+              <Text
+                style={{
+                  color:
+                    theme.colors
+                      .muted,
+
+                  fontSize:
+                    8.8,
+
+                  lineHeight:
+                    1.6,
+
+                  letterSpacing:
+                    0.2,
+                }}
+              >
+                {resume.skills.join(
+                  "   ·   "
+                )}
+              </Text>
+            </ExecutivePdfSection>
+          )}
+        </View>
+
+
+        <View
+          style={{
+            marginTop: 12,
+
+            borderBottomWidth:
+              1,
+
+            borderBottomColor:
+              theme.colors
+                .line,
+          }}
+        />
+      </Page>
+    </Document>
+  );
+}
+
+
+/* ======================================= */
+/* CREATIVE PDF */
+/* ======================================= */
+
+function CreativePdf({
+  resume,
+}: ResumePdfDocumentProps) {
+  const theme =
+    getResumeTemplateTheme(
+      "creative"
+    );
+
+  const experiences =
+    sortExperiences(
+      resume.experience
+    );
+
+  const education =
+    sortEducation(
+      resume.education
+    );
+
+  const subtitle =
+    getProfessionalTitle(
+      resume
+    );
+
+
+  return (
+    <Document
+      title={resume.title}
+      author="DocuAI"
+      subject="Professional Resume"
+    >
+      <Page
+        size="A4"
+        wrap
+        style={{
+          ...styles.page,
+
+          backgroundColor:
+            theme.colors
+              .paper,
+
+          fontFamily:
+            theme.pdfBodyFont,
+
+          color:
+            theme.colors
+              .ink,
+
+          fontSize: 9.5,
+        }}
+      >
+        <View
+          fixed
+          style={{
+            position:
+              "absolute",
+
+            left: 0,
+            top: 0,
+            bottom: 0,
+
+            width:
+              theme
+                .leftAccentWidth,
+
+            backgroundColor:
+              theme.colors
+                .accent,
+          }}
+        />
+
+
+        <View
+          style={{
+            paddingTop: 34,
+
+            paddingBottom: 34,
+
+            paddingLeft: 43,
+
+            paddingRight: 36,
+          }}
+        >
+          <View>
+            <View
+              style={{
+                alignSelf:
+                  "flex-start",
+
+                borderRadius: 10,
+
+                backgroundColor:
+                  theme.colors
+                    .accentSoft,
+
+                paddingVertical:
+                  4,
+
+                paddingHorizontal:
+                  9,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily:
+                    "Helvetica-Bold",
+
+                  color:
+                    theme.colors
+                      .accent,
+
+                  fontSize: 6.8,
+
+                  letterSpacing:
+                    1.1,
+
+                  textTransform:
+                    "uppercase",
+                }}
+              >
+                Professional Resume
+              </Text>
+            </View>
+
+
+            <Text
+              style={{
+                marginTop: 14,
+
+                fontFamily:
+                  "Helvetica-Bold",
+
+                color:
+                  theme.colors
+                    .ink,
+
+                fontSize: 29,
+
+                lineHeight: 0.95,
+
+                letterSpacing:
+                  -0.7,
+              }}
+            >
+              {getName(resume)}
+            </Text>
+
+
+            {subtitle && (
+              <Text
+                style={{
+                  marginTop: 10,
+
+                  fontFamily:
+                    "Helvetica-Bold",
+
+                  color:
+                    theme.colors
+                      .accent,
+
+                  fontSize:
+                    10.5,
+                }}
+              >
+                {subtitle}
+              </Text>
+            )}
+
+
+            <PdfContactLine
+              resume={resume}
+              color={
+                theme.colors
+                  .muted
+              }
+              marginTop={11}
+            />
+
+
+            <View
+              style={{
+                marginTop: 18,
+
+                borderBottomWidth:
+                  1,
+
+                borderBottomColor:
+                  theme.colors
+                    .line,
+              }}
+            />
+          </View>
+
+
+          <View
+            style={{
+              paddingTop: 22,
+            }}
+          >
+            {resume.summary && (
+              <CreativePdfSection
+                title={
+                  theme.labels
+                    .summary
+                }
+                theme={theme}
+              >
+                <Text
+                  style={{
+                    color:
+                      theme.colors
+                        .muted,
+
+                    fontSize: 9.5,
+
+                    lineHeight:
+                      1.55,
+                  }}
+                >
+                  {resume.summary}
+                </Text>
+              </CreativePdfSection>
+            )}
+
+
+            {experiences.length >
+              0 && (
+              <CreativePdfSection
+                title={
+                  theme.labels
+                    .experience
+                }
+                theme={theme}
+              >
+                {experiences.map(
+                  (
+                    experience,
+                    index
+                  ) => (
+                    <View
+                      key={
+                        experience.id
+                      }
+                      style={{
+                        padding: 11,
+
+                        borderWidth:
+                          1,
+
+                        borderColor:
+                          theme
+                            .colors
+                            .accentSoft,
+
+                        borderRadius:
+                          7,
+
+                        marginBottom:
+                          index ===
+                          experiences.length -
+                            1
+                            ? 0
+                            : 10,
+                      }}
+                    >
+                      <View
+                        style={
+                          styles.row
+                        }
+                      >
+                        <View
+                          style={
+                            styles.flex
+                          }
+                        >
+                          <Text
+                            style={{
+                              fontFamily:
+                                "Helvetica-Bold",
+
+                              color:
+                                theme
+                                  .colors
+                                  .ink,
+
+                              fontSize:
+                                10.2,
+                            }}
+                          >
+                            {experience.position ||
+                              "Position"}
+                          </Text>
+
+
+                          {experience.company && (
+                            <Text
+                              style={{
+                                marginTop:
+                                  3,
+
+                                fontFamily:
+                                  "Helvetica-Bold",
+
+                                color:
+                                  theme
+                                    .colors
+                                    .accent,
+
+                                fontSize:
+                                  8.5,
+                              }}
+                            >
+                              {
+                                experience.company
+                              }
+                            </Text>
+                          )}
+                        </View>
+
+
+                        <View
+                          style={{
+                            marginLeft:
+                              12,
+
+                            backgroundColor:
+                              theme
+                                .colors
+                                .accentSoft,
+
+                            borderRadius:
+                              10,
+
+                            paddingHorizontal:
+                              7,
+
+                            paddingVertical:
+                              4,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color:
+                                theme
+                                  .colors
+                                  .accent,
+
+                              fontSize:
+                                7.4,
+
+                              fontFamily:
+                                "Helvetica-Bold",
+                            }}
+                          >
+                            {formatDateRange(
+                              experience.startDate,
+                              experience.endDate
+                            )}
+                          </Text>
+                        </View>
+                      </View>
+
+
+                      <PdfDescription
+                        text={
+                          experience.description
+                        }
+                        color={
+                          theme
+                            .colors
+                            .muted
+                        }
+                      />
+                    </View>
+                  )
+                )}
+              </CreativePdfSection>
+            )}
+
+
+            {education.length > 0 && (
+              <CreativePdfSection
+                title={
+                  theme.labels
+                    .education
+                }
+                theme={theme}
+              >
+                {education.map(
+                  (
+                    item,
+                    index
+                  ) => (
+                    <PdfEducation
+                      key={item.id}
+                      item={item}
+                      theme={theme}
+                      marginBottom={
+                        index ===
+                        education.length -
+                          1
+                          ? 0
+                          : 10
+                      }
+                    />
+                  )
+                )}
+              </CreativePdfSection>
+            )}
+
+
+            {resume.skills.length >
+              0 && (
+              <CreativePdfSection
+                title={
+                  theme.labels
+                    .skills
+                }
+                theme={theme}
+                last
+              >
+                <View
+                  style={{
+                    flexDirection:
+                      "row",
+
+                    flexWrap:
+                      "wrap",
+                  }}
+                >
+                  {resume.skills.map(
+                    (skill) => (
+                      <View
+                        key={skill}
+                        style={{
+                          backgroundColor:
+                            theme
+                              .colors
+                              .accentSoft,
+
+                          borderRadius:
+                            4,
+
+                          paddingVertical:
+                            4,
+
+                          paddingHorizontal:
+                            7,
+
+                          marginRight:
+                            5,
+
+                          marginBottom:
+                            5,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color:
+                              theme
+                                .colors
+                                .ink,
+
+                            fontFamily:
+                              "Helvetica-Bold",
+
+                            fontSize:
+                              7.8,
+                          }}
+                        >
+                          {skill}
+                        </Text>
+                      </View>
+                    )
+                  )}
+                </View>
+              </CreativePdfSection>
+            )}
+          </View>
+        </View>
+      </Page>
+    </Document>
+  );
+}
+
+
+/* ======================================= */
+/* PDF SECTIONS */
+/* ======================================= */
+
+function ModernPdfSection({
+  title,
+  children,
+  theme,
+  last = false,
+}: {
+  title: string;
+
+  children:
+    React.ReactNode;
+
+  theme:
+    ReturnType<
+      typeof getResumeTemplateTheme
+    >;
+
+  last?: boolean;
+}) {
+  return (
+    <View
+      style={{
+        marginBottom:
+          last ? 0 : 19,
+      }}
+    >
+      <Text
+        style={{
+          fontFamily:
+            "Helvetica-Bold",
+
+          fontSize: 9,
+
+          letterSpacing:
+            1.3,
+
+          textTransform:
+            "uppercase",
+
+          color:
+            theme.colors
+              .ink,
+        }}
+      >
+        {title}
+      </Text>
+
+
+      <View
+        style={{
+          marginTop: 5,
+
+          width: 30,
+
+          height: 2.5,
+
+          borderRadius: 2,
+
+          backgroundColor:
+            theme.colors
+              .accent,
+        }}
+      />
+
+
+      <View
+        style={{
+          marginTop: 10,
+        }}
+      >
+        {children}
+      </View>
+    </View>
+  );
+}
+
+
+function ExecutivePdfSection({
+  title,
+  children,
+  theme,
+  last = false,
+}: {
+  title: string;
+
+  children:
+    React.ReactNode;
+
+  theme:
+    ReturnType<
+      typeof getResumeTemplateTheme
+    >;
+
+  last?: boolean;
+}) {
+  return (
+    <View
+      style={{
+        marginBottom:
+          last ? 0 : 21,
+      }}
+    >
+      <View
+        style={{
+          flexDirection:
+            "row",
+
+          alignItems:
+            "center",
+        }}
+      >
+        <Text
+          style={{
+            fontFamily:
+              theme
+                .pdfHeadingFont,
+
+            fontSize: 9,
+
+            textTransform:
+              "uppercase",
+
+            letterSpacing:
+              1.1,
+
+            color:
+              theme.colors
+                .ink,
+          }}
+        >
+          {title}
+        </Text>
+
+
+        <View
+          style={{
+            flexGrow: 1,
+
+            marginLeft: 11,
+
+            borderBottomWidth:
+              0.7,
+
+            borderBottomColor:
+              theme.colors
+                .line,
+          }}
+        />
+      </View>
+
+
+      <View
+        style={{
+          marginTop: 11,
+        }}
+      >
+        {children}
+      </View>
+    </View>
+  );
+}
+
+
+function CreativePdfSection({
+  title,
+  children,
+  theme,
+  last = false,
+}: {
+  title: string;
+
+  children:
+    React.ReactNode;
+
+  theme:
+    ReturnType<
+      typeof getResumeTemplateTheme
+    >;
+
+  last?: boolean;
+}) {
+  return (
+    <View
+      style={{
+        marginBottom:
+          last ? 0 : 20,
+      }}
+    >
+      <View
+        style={{
+          flexDirection:
+            "row",
+
+          alignItems:
+            "center",
+        }}
+      >
+        <View
+          style={{
+            width: 19,
+
+            height: 19,
+
+            borderRadius: 5,
+
+            backgroundColor:
+              theme.colors
+                .accentSoft,
+
+            alignItems:
+              "center",
+
+            justifyContent:
+              "center",
+          }}
+        >
+          <View
+            style={{
+              width: 5,
+
+              height: 5,
+
+              borderRadius:
+                3,
+
+              backgroundColor:
+                theme.colors
+                  .accent,
+            }}
+          />
+        </View>
+
+
+        <Text
+          style={{
+            marginLeft: 8,
+
+            fontFamily:
+              "Helvetica-Bold",
+
+            fontSize:
+              10.5,
+
+            color:
+              theme.colors
+                .ink,
+          }}
+        >
+          {title}
+        </Text>
+
+
+        <View
+          style={{
+            flexGrow: 1,
+
+            marginLeft: 9,
+
+            borderBottomWidth:
+              0.8,
+
+            borderBottomColor:
+              theme.colors
+                .accentSoft,
+          }}
+        />
+      </View>
+
+
+      <View
+        style={{
+          marginTop: 10,
+        }}
+      >
+        {children}
+      </View>
+    </View>
+  );
+}
+
+
+/* ======================================= */
+/* PDF SHARED */
+/* ======================================= */
+
+function PdfContactLine({
+  resume,
+  color,
+  marginTop,
+  centered = false,
+}: {
+  resume:
+    ResumeEditorData;
+
+  color:
+    string;
+
+  marginTop:
+    number;
+
+  centered?: boolean;
+}) {
+  const values = [
+    resume.personalInfo.email,
+    resume.personalInfo.phone,
+    resume.personalInfo.location,
+    resume.personalInfo.linkedin,
+  ].filter(Boolean);
+
+
+  if (values.length === 0) {
+    return null;
+  }
+
+
+  return (
+    <Text
+      style={{
+        marginTop,
+
+        color,
+
+        fontSize: 7.8,
+
+        lineHeight: 1.45,
+
+        textAlign:
+          centered
+            ? "center"
+            : "left",
+      }}
+    >
+      {values.join(
+        "  •  "
+      )}
+    </Text>
+  );
+}
+
+
+function PdfDescription({
+  text,
+  color,
+}: {
+  text:
+    string;
+
+  color:
+    string;
+}) {
+  const lines =
+    getDescriptionLines(
+      text
+    );
+
+
+  if (lines.length === 0) {
+    return null;
+  }
+
+
+  return (
+    <View
+      style={{
+        marginTop: 7,
+      }}
+    >
+      {lines.map(
+        (line, index) => (
+          <View
+            key={`${line}-${index}`}
+            style={
+              styles.bulletRow
+            }
+          >
+            <Text
+              style={{
+                ...styles.bullet,
+
+                color,
+
+                fontSize:
+                  8.5,
+              }}
+            >
+              •
+            </Text>
+
+
+            <Text
+              style={{
+                flexGrow: 1,
+
+                flexShrink: 1,
+
+                color,
+
+                fontSize:
+                  8.7,
+
+                lineHeight:
+                  1.45,
+              }}
+            >
+              {line}
+            </Text>
+          </View>
+        )
+      )}
+    </View>
+  );
+}
+
+
+function PdfEducation({
+  item,
+  theme,
+  marginBottom,
+}: {
+  item:
+    ResumeEducation;
+
+  theme:
+    ReturnType<
+      typeof getResumeTemplateTheme
+    >;
+
+  marginBottom:
+    number;
+}) {
+  return (
+    <View
+      style={{
+        ...styles.row,
+
+        marginBottom,
+      }}
+    >
+      <View
+        style={
+          styles.flex
+        }
+      >
+        <Text
+          style={{
+            fontFamily:
+              "Helvetica-Bold",
+
+            fontSize:
+              9.5,
+
+            color:
+              theme.colors
+                .ink,
+          }}
+        >
+          {item.degree ||
+            "Degree"}
+        </Text>
+
+
+        {item.school && (
+          <Text
+            style={{
+              marginTop: 3,
+
+              fontSize: 8.3,
+
+              color:
+                theme.colors
+                  .accent,
+            }}
+          >
+            {item.school}
+          </Text>
+        )}
+      </View>
+
+
+      <Text
+        style={{
+          marginLeft: 14,
+
+          fontSize: 7.8,
+
+          color:
+            theme.colors
+              .muted,
+        }}
+      >
+        {formatDateRange(
+          item.startDate,
+          item.endDate
+        )}
+      </Text>
+    </View>
+  );
+}
+
+
+/* ======================================= */
+/* HELPERS */
+/* ======================================= */
+
+function getName(
+  resume:
+    ResumeEditorData
+) {
+  return (
+    resume.personalInfo
+      .name?.trim() ||
+    "Your Name"
+  );
+}
+
+
+function getProfessionalTitle(
+  resume:
+    ResumeEditorData
+) {
+  const current =
+    sortExperiences(
+      resume.experience
+    )[0];
+
+  return (
+    current?.position
+      ?.trim() || ""
+  );
 }
 
 
 function getDescriptionLines(
-  description: string
+  value: string
 ) {
-  const trimmed =
-    description.trim();
-
-
-  if (!trimmed) {
-    return [];
-  }
-
-
-  return trimmed
-    .split(/\r?\n/)
+  return value
+    .split(/\n+/)
     .map((line) =>
       line
         .replace(
-          /^[•\-–—*]\s*/,
+          /^[•\-*]\s*/,
           ""
         )
         .trim()
@@ -794,31 +1877,36 @@ function getDescriptionLines(
 
 
 function formatDateRange(
-  startDate: string,
-  endDate: string
+  start: string,
+  end: string
 ) {
   const formattedStart =
-    formatMonth(startDate);
-
+    formatDate(start);
 
   const formattedEnd =
-    endDate
-      ? formatMonth(endDate)
-      : formattedStart
-        ? "Present"
-        : "";
+    end
+      ? formatDate(end)
+      : "Present";
 
 
-  return [
-    formattedStart,
-    formattedEnd,
-  ]
-    .filter(Boolean)
-    .join(" — ");
+  if (
+    !formattedStart &&
+    !formattedEnd
+  ) {
+    return "";
+  }
+
+
+  if (!formattedStart) {
+    return formattedEnd;
+  }
+
+
+  return `${formattedStart} – ${formattedEnd}`;
 }
 
 
-function formatMonth(
+function formatDate(
   value: string
 ) {
   if (!value) {
@@ -826,9 +1914,17 @@ function formatMonth(
   }
 
 
+  if (
+    value.toLowerCase() ===
+    "present"
+  ) {
+    return "Present";
+  }
+
+
   const match =
-    /^(\d{4})-(\d{2})$/.exec(
-      value
+    value.match(
+      /^(\d{4})-(\d{2})$/
     );
 
 
@@ -837,38 +1933,100 @@ function formatMonth(
   }
 
 
-  const year = match[1];
+  const year =
+    Number(match[1]);
 
-  const monthNumber =
+  const month =
     Number(match[2]);
 
 
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
+  const date =
+    new Date(
+      Date.UTC(
+        year,
+        month - 1,
+        1
+      )
+    );
 
 
-  const month =
-    months[
-      monthNumber - 1
-    ];
+  return new Intl
+    .DateTimeFormat(
+      "en",
+      {
+        month:
+          "short",
+
+        year:
+          "numeric",
+
+        timeZone:
+          "UTC",
+      }
+    )
+    .format(date);
+}
 
 
-  if (!month) {
-    return value;
+function sortExperiences(
+  items:
+    ResumeExperience[]
+) {
+  return [
+    ...items,
+  ].sort(
+    (
+      a,
+      b
+    ) =>
+      dateValue(
+        b.startDate
+      ) -
+      dateValue(
+        a.startDate
+      )
+  );
+}
+
+
+function sortEducation(
+  items:
+    ResumeEducation[]
+) {
+  return [
+    ...items,
+  ].sort(
+    (
+      a,
+      b
+    ) =>
+      dateValue(
+        b.startDate
+      ) -
+      dateValue(
+        a.startDate
+      )
+  );
+}
+
+
+function dateValue(
+  value: string
+) {
+  if (!value) {
+    return 0;
   }
 
 
-  return `${month} ${year}`;
+  const timestamp =
+    Date.parse(
+      `${value}-01`
+    );
+
+
+  return Number.isNaN(
+    timestamp
+  )
+    ? 0
+    : timestamp;
 }
