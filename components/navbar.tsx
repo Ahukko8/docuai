@@ -11,8 +11,6 @@ import {
   FileText,
 } from "lucide-react";
 
-import Image from "next/image";
-
 import {
   Button,
 } from "@/components/ui/button";
@@ -73,9 +71,7 @@ export default function Navbar() {
               shadow-purple-950/30
             "
           >
-            <Image
-              src="/favicon.ico"
-              alt="DocuAI Logo"
+            <FileText
               className="
                 h-4
                 w-4
