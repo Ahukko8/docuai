@@ -11,9 +11,20 @@ let aiClient:
   OpenAI | null = null;
 
 
-export const RESUME_AI_MODEL =
+export const AI_MODEL =
   process.env.GROQ_MODEL?.trim() ||
   "openai/gpt-oss-20b";
+
+
+/*
+ * Backward compatibility.
+ *
+ * Existing resume AI code can continue
+ * importing RESUME_AI_MODEL.
+ */
+
+export const RESUME_AI_MODEL =
+  AI_MODEL;
 
 
 export function getAIClient() {

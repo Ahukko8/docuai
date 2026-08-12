@@ -12,6 +12,7 @@ import {
 import {
   ArrowRight,
   Crown,
+  FileSignature,
   FileText,
   LayoutDashboard,
   Plus,
@@ -759,6 +760,20 @@ export default async function DashboardPage() {
 
 
             <QuickAction
+              href="/dashboard/cover-letters"
+              title="Cover letters"
+              description="Create and manage cover letters"
+              icon={
+                <FileSignature
+                  className="
+                    h-4
+                    w-4
+                  "
+                />
+              }
+            />
+
+            <QuickAction
               href="/dashboard/billing"
               title="Billing & plan"
               description="Manage your subscription"
@@ -771,6 +786,8 @@ export default async function DashboardPage() {
                 />
               }
             />
+
+
 
 
             <QuickAction
@@ -841,7 +858,7 @@ export default async function DashboardPage() {
                 "
               />
 
-              Coming next
+              New feature
             </div>
 
 
@@ -866,7 +883,7 @@ export default async function DashboardPage() {
                 text-zinc-400
               "
             >
-              Our next milestone will
+              Our next milestone has been acheived! You can now
               add personalized cover
               letters with professional
               templates, AI writing,
@@ -891,7 +908,7 @@ export default async function DashboardPage() {
               text-purple-300
             "
           >
-            Next milestone
+            Cover letters are in beta. We would love your feedback!
           </div>
         </div>
       </section>
