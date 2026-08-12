@@ -7,9 +7,7 @@ import {
   UserButton,
 } from "@clerk/nextjs";
 
-import {
-  FileText,
-} from "lucide-react";
+import Image from "next/image";
 
 import {
   Button,
@@ -57,27 +55,20 @@ export default function Navbar() {
             gap-2
           "
         >
-          <div
-            className="
+            <Image
+              src="/favicon.ico"
+              alt="DocuAI Logo"
+              width={75}
+              height={75}
+               className="
               flex
-              h-9
-              w-9
               items-center
               justify-center
               rounded-xl
-              bg-purple-600
-              text-white
               shadow-lg
               shadow-purple-950/30
             "
-          >
-            <FileText
-              className="
-                h-4
-                w-4
-              "
             />
-          </div>
 
 
           <span
