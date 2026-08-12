@@ -10,7 +10,7 @@ import Navbar from "@/components/navbar";
 
 
 export const metadata: Metadata = {
-  title: "CareerAI",
+  title: "DocuAI",
   description:
     "AI powered resume builder and career assistant",
 };
